@@ -20,6 +20,7 @@ RUN make
 RUN make install
 WORKDIR /root
 RUN pip install git+git://github.com/couchbase/couchbase-python-client
+RUN pip install pyyaml
 
 # src
 RUN git clone https://github.com/couchbaselabs/gideon.git
