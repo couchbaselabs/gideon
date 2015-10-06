@@ -1,5 +1,6 @@
 import argparse
 import copy
+import yaml
 from loader import start_client_processes
 
 parser = argparse.ArgumentParser(description='Mighty Small CB Loader')
@@ -10,21 +11,21 @@ def run_workload(args):
 
 def argsToTask(args):
 
-    bucket = args.bucket
-    password = args.password
-    active_hosts = args.hosts
-    ops_sec = args.ops
+    bucket = args.get('bucket')
+    password = args.get('password')
+    active_hosts = args.get('hosts')
+    ops_sec = args.get('ops')
     num_consumers = 1
 
     ops_sec = int(ops_sec)/num_consumers
-    create_count = int(ops_sec *  args.create/100)
-    update_count = int(ops_sec *  args.update/100)
-    get_count = int(ops_sec *  args.get/100)
-    del_count = int(ops_sec *  args.delete/100)
-    exp_count = int(ops_sec *  args.expire/100)
+    create_count = int(ops_sec *  args.get('create')/100)
+    update_count = int(ops_sec *  args.get('update')/100)
+    get_count = int(ops_sec *  args.get('get')/100)
+    del_count = int(ops_sec *  args.get('delete')/100)
+    exp_count = int(ops_sec *  args.get('expire')/100)
 
-    ttl = args.ttl
-    miss_perc = args.miss
+    ttl = args.get('ttl')
+    miss_perc = args.get('miss')
 
     # broadcast to sdk_consumers
     msg = {'bucket' : bucket,
@@ -56,6 +57,7 @@ def argsToTask(args):
 if __name__ == "__main__":
 
     ## ARGS ##
+    parser.add_argument("--spec",  help="workload specification file", default=None)
     parser.add_argument("--bucket",  help="bucket", default="default")
     parser.add_argument("--password", help="password", default="")
     parser.add_argument("--ops",     help="ops per sec", default=0, type=int)
@@ -70,8 +72,17 @@ if __name__ == "__main__":
     parser.add_argument("--hosts",  default=["127.0.0.1"],  nargs='+', help="couchbase hosts for use with standalone")
     parser.add_argument("--padding",  default="", help="you can put a custom string here when using standalone loader")
     parser.add_argument("--name",    help="predefind workload", default="default")
-    parser.set_defaults(handler=run_workload)
 
     args = parser.parse_args()
-    args.handler(args)
+    args = vars(args)
+
+    if args['spec']:
+        stream = open("spec.yaml", "r")
+        spec = yaml.load(stream)
+
+        # override args
+        for opt in spec:
+            args[opt] = spec[opt]
+
+    run_workload(args)
 

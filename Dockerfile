@@ -25,3 +25,5 @@ RUN pip install git+git://github.com/couchbase/couchbase-python-client
 RUN git clone https://github.com/couchbaselabs/gideon.git
 WORKDIR gideon
 
+COPY spec.yaml spec.yaml
+CMD python gideon.py --spec spec.yaml

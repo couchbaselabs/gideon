@@ -1,0 +1,12 @@
+---
+bucket: default
+ops: 2000 
+create: 100 
+update: 0
+get: 0
+delete: 0
+miss: 0
+expire: 0
+ttl: 15
+hosts:
+  - 127.0.0.1
