@@ -76,8 +76,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     args = vars(args)
 
-    if args['spec']:
-        stream = open("spec.yaml", "r")
+    spec_file = args.get('spec']
+    if spec_file:
+        stream = open(spec_file, "r")
         spec = yaml.load(stream)
 
         # override args
