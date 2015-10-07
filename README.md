@@ -2,7 +2,14 @@
 Mighty small doc loader
 
 Built on python's libcouchbase interface.  Achieves very high op rate via batching ops.
+
 ```bash
+# pre-reqs
+./build.sh
+``
+`
+```bash
+#run
 python gideon.py --ops 50000  --create 30 --get 60 --delete 10
 ```
 
