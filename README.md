@@ -6,9 +6,7 @@ Built on python's libcouchbase interface.  Achieves very high op rate via batchi
 ```bash
 # pre-reqs
 ./build.sh
-``
-`
-```bash
+
 #run
 python gideon.py --ops 50000  --create 30 --get 60 --delete 10
 ```
