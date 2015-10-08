@@ -76,7 +76,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     args = vars(args)
 
-    spec_file = args.get('spec']
+    spec_file = args.get('spec')
     if spec_file:
         stream = open(spec_file, "r")
         spec = yaml.load(stream)
