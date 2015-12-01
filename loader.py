@@ -46,7 +46,7 @@ class SDKClient(threading.Thread):
         self.bucket = task['bucket']
         self.password  = task['password']
         self.template = task['template']
-        self.default_tsizes = [128, 256]
+        self.default_tsizes = task['sizes']
         self.create_count = task['create_count']/self.op_factor
         self.update_count = task['update_count']/self.op_factor
         self.get_count = task['get_count']/self.op_factor
@@ -62,6 +62,7 @@ class SDKClient(threading.Thread):
         self.ccq = None
         self.hotkey_batches = []
 
+        print task['sizes']
         if self.batch_size > self.create_count:
             self.batch_size = self.create_count
 

@@ -15,6 +15,7 @@ def argsToTask(args):
     password = args.get('password')
     active_hosts = args.get('hosts')
     ops_sec = args.get('ops')
+    sizes = args.get('sizes')
     num_consumers = 1
 
     ops_sec = int(ops_sec)/num_consumers
@@ -42,7 +43,8 @@ def argsToTask(args):
            'ttl' : ttl,
            'miss_perc' : miss_perc,
            'active' : True,
-           'active_hosts' : active_hosts}
+           'active_hosts' : active_hosts,
+           'sizes': sizes}
 
     # set doc-template to this message
     msg_copy = copy.deepcopy(msg)
@@ -72,6 +74,7 @@ if __name__ == "__main__":
     parser.add_argument("--hosts",  default=["127.0.0.1"],  nargs='+', help="couchbase hosts for use with standalone")
     parser.add_argument("--padding",  default="", help="you can put a custom string here when using standalone loader")
     parser.add_argument("--name",    help="predefind workload", default="default")
+    parser.add_argument("--sizes",  default=[128, 256], nargs="+", type=int, help="kv doc size(json)")
 
     args = parser.parse_args()
     args = vars(args)
