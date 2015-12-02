@@ -1,6 +1,6 @@
 - hosts: orchestrator
   vars:
-    view_spec: "../specs/ddoc_4_views.json"
+    view_spec: "../specs/ddoc_2_views.json"
     rest_user: "Administrator"
     rest_pass: "password"
     bucket0: "default"
