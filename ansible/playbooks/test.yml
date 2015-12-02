@@ -1,0 +1,40 @@
+- hosts: orchestrator
+  vars:
+    view_spec: "../specs/ddoc_4_views.json"
+  tasks:
+    - name: copy view spec
+      copy: src="{{view_spec}}"  dest=/tmp/views.json
+    - name: post view spec
+      shell: "curl -X PUT -u {{rest_user}}:{{rest_pass}} -H 'Content-Type: application/json' {{ddoc_url}} -d@/tmp/views.json"
+- hosts: clients
+  vars:
+   ops_main: 8000
+   ops_small: 5000
+   create_perc: 30
+   get_perc: 60
+   delete_perc: 10
+   sizes: "756 1024 1256"
+   bucket0: "default"
+   bucket1: "bucket1"
+   bucket2: "bucket2"
+  remote_user: root
+  tasks:
+    - name: checkout client repo
+      git: repo=https://github.com/couchbaselabs/gideon dest=gideon/
+    - name: start workload for bucket0
+      shell: "nohup python gideon.py --ops {{ops_main}} --create {{create_perc}} --get {{get_perc}} --delete {{delete_perc}} --hosts {{groups['orchestrator'][0]}} --bucket {{bucket0}} --sizes {{sizes}} &"
+      args:
+          chdir: gideon/
+    - name: start workload for bucket1
+      shell: "nohup python gideon.py --ops {{ops_main}} --create {{create_perc}} --get {{get_perc}} --delete {{delete_perc}} --hosts {{groups['orchestrator'][0]}} --bucket {{bucket1}}&"
+      args:
+          chdir: gideon/
+    - name: start workload for bucket2
+      shell: "nohup python gideon.py --ops {{ops_main}} --create {{create_perc}} --get {{get_perc}} --delete {{delete_perc}} --hosts {{groups['orchestrator'][0]}} --bucket {{bucket2}}&"
+      args:
+          chdir: gideon/
+    - name: wait for 1 hour
+      wait_for: timeout=60
+    - name: stop clients
+      shell: "ps aux | grep gideon | awk '{print $2}' | xargs -I '{}' kill -s 9 '{}'"
+      ignore_errors: True

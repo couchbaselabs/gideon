@@ -1,0 +1,54 @@
+---
+- hosts: orchestrator
+  vars:
+   cluster_user: "Administrator"
+   cluster_pass: "password"
+   cluster_port: 8091
+   services: "data"
+   ram_size: 6200
+   cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+  remote_user: root
+  tasks:
+    - name: init cluster
+      shell: "{{cli_bin}} cluster-init -c {{inventory_hostname}} --cluster-username={{cluster_user}} --cluster-password={{cluster_pass}} --cluster-port={{cluster_port}} --cluster-ramsize={{ram_size}} --services={{services}}"
+
+
+- hosts: couchbaseservers
+  vars:
+   data_path: "/data"
+   index_path: "/data"
+   rest_user: "Administrator"
+   rest_pass: "password"
+   rest_port: 8091
+   cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+  remote_user: root
+  tasks:
+    - name: init data paths
+      shell: "{{cli_bin}} node-init -c {{inventory_hostname}} --node-init-data-path={{data_path}} --node-init-index-path={{index_path}} -u {{rest_user}} -p {{rest_pass}}"
+      when: inventory_hostname != groups['orchestrator'][0]
+    - name: join cluster
+      shell: "{{cli_bin}} server-add -c {{groups['orchestrator'][0]}}:{{rest_port}} --server-add={{inventory_hostname}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
+      when: inventory_hostname != groups['orchestrator'][0]
+
+- hosts: orchestrator
+  vars:
+    rest_user: "Administrator"
+    rest_pass: "password"
+    bucket0: "default"
+    bucket1: "bucket1"
+    bucket2: "bucket2"
+    bucket_size_main: 4096
+    bucket_size_small:  1024
+    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+    ddoc_name: "scale"
+    ddoc_url: "http://{{groups['orchestrator'][0]}}:8092/{{bucket0}}/_design/{{ddoc_name}}"
+  tasks:
+   - name: rebalance in nodes
+     shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
+   - name: create bucket0
+     shell: "{{cli_bin}}  bucket-create -c  {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}} --bucket={{bucket0}} --bucket-ramsize={{bucket_size_main}} --bucket-type=couchbase --wait"
+   - name: create bucket1
+     shell: "{{cli_bin}}  bucket-create -c  {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}} --bucket={{bucket1}} --bucket-ramsize={{bucket_size_small}} --bucket-type=couchbase --wait"
+   - name: create bucket2
+     shell: "{{cli_bin}}  bucket-create -c  {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}} --bucket={{bucket2}} --bucket-ramsize={{bucket_size_small}} --bucket-type=couchbase --wait"
+
