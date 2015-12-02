@@ -1,5 +1,5 @@
 # gideon
-Mighty small doc loader
+Featuring the mighty, small, doc loader
 
 Built on python's libcouchbase interface.  Achieves very high op rate via batching ops.
 
