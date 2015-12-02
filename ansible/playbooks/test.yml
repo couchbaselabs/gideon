@@ -39,7 +39,7 @@
       args:
           chdir: gideon/
     - name: wait for 1 hour
-      wait_for: timeout=60
+      wait_for: timeout=3600
     - name: stop clients
       shell: "ps aux | grep gideon | awk '{print $2}' | xargs -I '{}' kill -s 9 '{}'"
       ignore_errors: True
