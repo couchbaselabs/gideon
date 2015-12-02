@@ -40,8 +40,6 @@
     bucket_size_main: 4096
     bucket_size_small:  1024
     cli_bin:  "/opt/couchbase/bin/couchbase-cli"
-    ddoc_name: "scale"
-    ddoc_url: "http://{{groups['orchestrator'][0]}}:8092/{{bucket0}}/_design/{{ddoc_name}}"
   tasks:
    - name: rebalance in nodes
      shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"

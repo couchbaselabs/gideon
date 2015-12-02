@@ -1,6 +1,11 @@
 - hosts: orchestrator
   vars:
     view_spec: "../specs/ddoc_4_views.json"
+    rest_user: "Administrator"
+    rest_pass: "password"
+    bucket0: "default"
+    ddoc_name: "scale"
+    ddoc_url: "http://{{groups['orchestrator'][0]}}:8092/{{bucket0}}/_design/{{ddoc_name}}"
   tasks:
     - name: copy view spec
       copy: src="{{view_spec}}"  dest=/tmp/views.json
