@@ -1,0 +1,32 @@
+- hosts: orchestrator
+  vars:
+    rest_user: "Administrator"
+    rest_pass: "password"
+    bucket0: "default"
+    bucket1: "bucket1"
+    bucket2: "bucket2"
+    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+  tasks:
+   - name: delete bucket0
+     shell: "{{cli_bin}}  bucket-delete -c  {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}} --bucket={{bucket0}}"
+   - name: delete bucket1
+     shell: "{{cli_bin}}  bucket-delete -c  {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}} --bucket={{bucket1}}"
+   - name: delete bucket2
+     shell: "{{cli_bin}}  bucket-delete -c  {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}} --bucket={{bucket2}}"
+
+- hosts: clients
+  tasks:
+    - name: stop clients
+      shell: "ps aux | grep gideon | awk '{print $2}' | xargs -I '{}' kill -s 9 '{}'"
+      ignore_errors: True
+
+- hosts: couchbaseservers
+  vars:
+   rest_user: "Administrator"
+   rest_pass: "password"
+   cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+  tasks:
+   - name: rebalance out node
+     shell: "{{cli_bin}} rebalance -c {{groups['orchestrator'][0]}} --server-remove={{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
+     when: inventory_hostname != groups['orchestrator'][0]
+

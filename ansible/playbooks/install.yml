@@ -1,7 +1,7 @@
 ---
 - hosts: couchbaseservers
   vars:
-    build_no:  "{{BUILD_NO|default(999)}}"
+    build_no:  "{{BUILD_NO|default(696)}}"
     base_url:  http://172.23.120.24/builds/latestbuilds/couchbase-server/watson/
     build_pkg:  "couchbase-server-enterprise_4.5.0-{{build_no}}-ubuntu14.04_amd64.deb"
     build_url: "{{base_url}}/{{build_no}}/{{build_pkg}}"
@@ -13,6 +13,10 @@
     ignore_errors: True
   - name: uninstall couchbase
     apt: name=couchbase-server state=absent
+  - name: rm opt dir
+    shell: "rm -rf /opt/couchbase"
+  - name: rm data dir
+    shell: "rm -rf /data/*"
   - name: download binary
     get_url: url="{{build_url}}" dest="{{deb_path}}"
   - name: install couchbase
