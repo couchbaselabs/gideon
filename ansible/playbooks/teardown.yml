@@ -1,3 +1,10 @@
+- hosts: clients
+  tasks:
+    - name: stop clients
+      shell: "ps aux | grep gideon | awk '{print $2}' | xargs -I '{}' kill -s 9 '{}'"
+      ignore_errors: True
+
+
 - hosts: orchestrator
   vars:
     rest_user: "Administrator"
@@ -13,12 +20,6 @@
      shell: "{{cli_bin}}  bucket-delete -c  {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}} --bucket={{bucket1}}"
    - name: delete bucket2
      shell: "{{cli_bin}}  bucket-delete -c  {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}} --bucket={{bucket2}}"
-
-- hosts: clients
-  tasks:
-    - name: stop clients
-      shell: "ps aux | grep gideon | awk '{print $2}' | xargs -I '{}' kill -s 9 '{}'"
-      ignore_errors: True
 
 - hosts: couchbaseservers
   vars:
