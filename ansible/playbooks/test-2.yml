@@ -6,7 +6,7 @@
    create_perc: 30
    get_perc: 60
    delete_perc: 10
-   sizes: "756 1024 1256"
+   sizes: "128 256"
    bucket0: "default"
    bucket1: "bucket1"
    bucket2: "bucket2"
