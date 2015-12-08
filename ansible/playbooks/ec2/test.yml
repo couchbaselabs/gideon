@@ -3,59 +3,40 @@
   remote_user: ubuntu
   sudo: true
   vars:
-   ops_main: 4000
-   ops_small: 1000
+   ops_main: 25000
+   ops_small: 20000
    create_perc: 30
    get_perc: 60
    delete_perc: 10
-   sizes: "128 256"
+   sizes: "756 1024"
    bucket0: "default"
    bucket1: "bucket1"
    bucket2: "bucket2"
   tasks:
+    - name: set couchbase_server_cluster_primary_node variable
+      set_fact:
+        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+    - name: deps
+      apt: name=git
     - name: checkout client repo
       git: repo=https://github.com/couchbaselabs/gideon dest=gideon/
+    - name: build
+      shell: "cd gideon && ./build.sh"
+      ignore_errors: True
     - name: start workload for bucket0
-      shell: "nohup python gideon.py --ops {{ops_main}} --create {{create_perc}} --get {{get_perc}} --delete {{delete_perc}} --hosts {{groups['orchestrator'][0]}} --bucket {{bucket0}} --sizes {{sizes}} &"
+      shell: "nohup python gideon.py --ops {{ops_main}} --create {{create_perc}} --get {{get_perc}} --delete {{delete_perc}} --hosts {{couchbase_server_cluster_primary_node}} --bucket {{bucket0}} --sizes {{sizes}} &"
       args:
           chdir: gideon/
     - name: start workload for bucket1
-      shell: "nohup python gideon.py --ops {{ops_small}} --create {{create_perc}} --get {{get_perc}} --delete {{delete_perc}} --hosts {{groups['orchestrator'][0]}} --bucket {{bucket1}}&"
+      shell: "nohup python gideon.py --ops {{ops_small}} --create {{create_perc}} --get {{get_perc}} --delete {{delete_perc}} --hosts {{couchbase_server_cluster_primary_node}} --bucket {{bucket1}}&"
       args:
           chdir: gideon/
     - name: start workload for bucket2
-      shell: "nohup python gideon.py --ops {{ops_small}} --create {{create_perc}} --get {{get_perc}} --delete {{delete_perc}} --hosts {{groups['orchestrator'][0]}} --bucket {{bucket2}}&"
+      shell: "nohup python gideon.py --ops {{ops_small}} --create {{create_perc}} --get {{get_perc}} --delete {{delete_perc}} --hosts {{couchbase_server_cluster_primary_node}} --bucket {{bucket2}}&"
       args:
           chdir: gideon/
 
 # do rebalances  @2x increments
-- hosts: tag_Name_qecouchbaseserverdatacluster1node15:tag_Name_qecouchbaseserverdatacluster1node16
-  vars:
-    rest_port: 8091
-    rest_user: "Administrator"
-    rest_pass: "password"
-    rest_port: 8091
-    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
-    couchbase_server_node: "{{hostvars[ec2_ip_address]['ec2_private_dns_name']}}"
-  tasks:
-    - name: set couchbase_server_cluster_primary_node variable
-      set_fact:
-        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
-
-    - name: add 2 nodes
-      shell: "{{cli_bin}} server-add -c {{couchbase_server_cluster_primary_node}}:{{rest_port}} --server-add={{couchbase_server_node}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
-- hosts: tag_Name_qecouchbaseserverdatacluster1node0
-  vars:
-    rest_user: "Administrator"
-    rest_pass: "password"
-    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
-    couchbase_server_node: "{{hostvars[ec2_ip_address]['ec2_private_dns_name']}}"
-  tasks:
-    - name: rebalance
-      shell: "{{cli_bin}} rebalance -c {{couchbase_server_node}} -u {{rest_user}} -p {{rest_pass}}"
-    - name: wait for 10 minutes
-      wait_for: timeout=600
-
 - hosts: tag_Name_qecouchbaseserverdatacluster1node17:tag_Name_qecouchbaseserverdatacluster1node18
   vars:
     rest_port: 8091
@@ -67,7 +48,7 @@
   tasks:
     - name: set couchbase_server_cluster_primary_node variable
       set_fact:
-        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+	couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
 
     - name: add 2 nodes
       shell: "{{cli_bin}} server-add -c {{couchbase_server_cluster_primary_node}}:{{rest_port}} --server-add={{couchbase_server_node}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
@@ -81,7 +62,7 @@
     - name: rebalance
       shell: "{{cli_bin}} rebalance -c {{couchbase_server_node}} -u {{rest_user}} -p {{rest_pass}}"
     - name: wait for 10 minutes
-      wait_for: timeout=600
+      wait_for: timeout=120
 
 
 - hosts: tag_Name_qecouchbaseserverdatacluster1node19:tag_Name_qecouchbaseserverdatacluster1node20
@@ -95,7 +76,7 @@
   tasks:
     - name: set couchbase_server_cluster_primary_node variable
       set_fact:
-        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+	couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
 
     - name: add 2 nodes
       shell: "{{cli_bin}} server-add -c {{couchbase_server_cluster_primary_node}}:{{rest_port}} --server-add={{couchbase_server_node}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
@@ -109,7 +90,7 @@
     - name: rebalance
       shell: "{{cli_bin}} rebalance -c {{couchbase_server_node}} -u {{rest_user}} -p {{rest_pass}}"
     - name: wait for 10 minutes
-      wait_for: timeout=600
+      wait_for: timeout=120
 
 - hosts: tag_Name_qecouchbaseserverdatacluster1node21:tag_Name_qecouchbaseserverdatacluster1node22
   vars:
@@ -122,7 +103,7 @@
   tasks:
     - name: set couchbase_server_cluster_primary_node variable
       set_fact:
-        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+	couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
 
     - name: add 2 nodes
       shell: "{{cli_bin}} server-add -c {{couchbase_server_cluster_primary_node}}:{{rest_port}} --server-add={{couchbase_server_node}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
@@ -136,10 +117,7 @@
     - name: rebalance
       shell: "{{cli_bin}} rebalance -c {{couchbase_server_node}} -u {{rest_user}} -p {{rest_pass}}"
     - name: wait for 10 minutes
-      wait_for: timeout=600
-
-
-
+      wait_for: timeout=120
 
 
 - hosts: tag_Name_qecouchbaseserverdatacluster1node23:tag_Name_qecouchbaseserverdatacluster1node24
@@ -153,7 +131,7 @@
   tasks:
     - name: set couchbase_server_cluster_primary_node variable
       set_fact:
-        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+	couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
 
     - name: add 2 nodes
       shell: "{{cli_bin}} server-add -c {{couchbase_server_cluster_primary_node}}:{{rest_port}} --server-add={{couchbase_server_node}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
@@ -166,10 +144,8 @@
   tasks:
     - name: rebalance
       shell: "{{cli_bin}} rebalance -c {{couchbase_server_node}} -u {{rest_user}} -p {{rest_pass}}"
-    - name: wait for 10 minutes
-      wait_for: timeout=600
-
-
+    - name: wait for 2 minutes
+      wait_for: timeout=120
 
 
 - hosts: tag_Name_qecouchbaseserverdatacluster1node25:tag_Name_qecouchbaseserverdatacluster1node26
@@ -183,7 +159,7 @@
   tasks:
     - name: set couchbase_server_cluster_primary_node variable
       set_fact:
-        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+	couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
 
     - name: add 2 nodes
       shell: "{{cli_bin}} server-add -c {{couchbase_server_cluster_primary_node}}:{{rest_port}} --server-add={{couchbase_server_node}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
@@ -196,10 +172,8 @@
   tasks:
     - name: rebalance
       shell: "{{cli_bin}} rebalance -c {{couchbase_server_node}} -u {{rest_user}} -p {{rest_pass}}"
-    - name: wait for 10 minutes
-      wait_for: timeout=600
-
-
+    - name: wait for 2 minutes
+      wait_for: timeout=120
 
 
 - hosts: tag_Name_qecouchbaseserverdatacluster1node27:tag_Name_qecouchbaseserverdatacluster1node28
@@ -213,7 +187,7 @@
   tasks:
     - name: set couchbase_server_cluster_primary_node variable
       set_fact:
-        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+	couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
 
     - name: add 2 nodes
       shell: "{{cli_bin}} server-add -c {{couchbase_server_cluster_primary_node}}:{{rest_port}} --server-add={{couchbase_server_node}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
@@ -226,15 +200,265 @@
   tasks:
     - name: rebalance
       shell: "{{cli_bin}} rebalance -c {{couchbase_server_node}} -u {{rest_user}} -p {{rest_pass}}"
-    - name: wait for 10 minutes
-      wait_for: timeout=600
+    - name: wait for 2 minutes
+      wait_for: timeout=120
+
+# failover nodes
+- hosts: tag_Name_qecouchbaseserverdatacluster1node28
+  remote_user: ubuntu
+  vars:
+   rest_user: "Administrator"
+   rest_pass: "password"
+   rest_port: 8091
+   cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+   couchbase_server_node: "{{hostvars[ec2_ip_address]['ec2_private_dns_name']}}"
+  tasks:
+    - name: set couchbase_server_cluster_primary_node variable
+      set_fact:
+        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+    - name: failover
+      shell: "{{cli_bin}} failover -c {{couchbase_server_cluster_primary_node}} --server-failover={{couchbase_server_node}}:{{rest_port}}  -u {{rest_user}} -p {{rest_pass}}"
+    - name: rebalance
+      shell: "{{cli_bin}} rebalance -c {{couchbase_server_cluster_primary_node}} -u {{rest_user}} -p {{rest_pass}}"
+
+- hosts: tag_Name_qecouchbaseserverdatacluster1node27
+  remote_user: ubuntu
+  vars:
+   rest_user: "Administrator"
+   rest_pass: "password"
+   rest_port: 8091
+   cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+   couchbase_server_node: "{{hostvars[ec2_ip_address]['ec2_private_dns_name']}}"
+  tasks:
+    - name: set couchbase_server_cluster_primary_node variable
+      set_fact:
+        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+    - name: failover
+      shell: "{{cli_bin}} failover -c {{couchbase_server_cluster_primary_node}} --server-failover={{couchbase_server_node}}:{{rest_port}}  -u {{rest_user}} -p {{rest_pass}}"
+    - name: rebalance
+      shell: "{{cli_bin}} rebalance -c {{couchbase_server_cluster_primary_node}} -u {{rest_user}} -p {{rest_pass}}"
+
+- hosts: tag_Name_qecouchbaseserverdatacluster1node26
+  remote_user: ubuntu
+  vars:
+   rest_user: "Administrator"
+   rest_pass: "password"
+   rest_port: 8091
+   cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+   couchbase_server_node: "{{hostvars[ec2_ip_address]['ec2_private_dns_name']}}"
+  tasks:
+    - name: set couchbase_server_cluster_primary_node variable
+      set_fact:
+        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+    - name: failover
+      shell: "{{cli_bin}} failover -c {{couchbase_server_cluster_primary_node}} --server-failover={{couchbase_server_node}}:{{rest_port}}  -u {{rest_user}} -p {{rest_pass}}"
+    - name: rebalance
+      shell: "{{cli_bin}} rebalance -c {{couchbase_server_cluster_primary_node}} -u {{rest_user}} -p {{rest_pass}}"
+
+
+- hosts: tag_Name_qecouchbaseserverdatacluster1node25
+  remote_user: ubuntu
+  vars:
+   rest_user: "Administrator"
+   rest_pass: "password"
+   rest_port: 8091
+   cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+   couchbase_server_node: "{{hostvars[ec2_ip_address]['ec2_private_dns_name']}}"
+  tasks:
+    - name: set couchbase_server_cluster_primary_node variable
+      set_fact:
+        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+    - name: failover
+      shell: "{{cli_bin}} failover -c {{couchbase_server_cluster_primary_node}} --server-failover={{couchbase_server_node}}:{{rest_port}}  -u {{rest_user}} -p {{rest_pass}}"
+    - name: rebalance
+      shell: "{{cli_bin}} rebalance -c {{couchbase_server_cluster_primary_node}} -u {{rest_user}} -p {{rest_pass}}"
+
+- hosts: tag_Name_qecouchbaseserverdatacluster1node24
+  remote_user: ubuntu
+  vars:
+   rest_user: "Administrator"
+   rest_pass: "password"
+   rest_port: 8091
+   cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+   couchbase_server_node: "{{hostvars[ec2_ip_address]['ec2_private_dns_name']}}"
+  tasks:
+    - name: set couchbase_server_cluster_primary_node variable
+      set_fact:
+        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+    - name: failover
+      shell: "{{cli_bin}} failover -c {{couchbase_server_cluster_primary_node}} --server-failover={{couchbase_server_node}}:{{rest_port}}  -u {{rest_user}} -p {{rest_pass}}"
+    - name: rebalance
+      shell: "{{cli_bin}} rebalance -c {{couchbase_server_cluster_primary_node}} -u {{rest_user}} -p {{rest_pass}}"
+
+
+
+
+- hosts: tag_Name_qecouchbaseserverdatacluster1node23
+  remote_user: ubuntu
+  vars:
+   rest_user: "Administrator"
+   rest_pass: "password"
+   rest_port: 8091
+   cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+   couchbase_server_node: "{{hostvars[ec2_ip_address]['ec2_private_dns_name']}}"
+  tasks:
+    - name: set couchbase_server_cluster_primary_node variable
+      set_fact:
+        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+    - name: failover
+      shell: "{{cli_bin}} failover -c {{couchbase_server_cluster_primary_node}} --server-failover={{couchbase_server_node}}:{{rest_port}}  -u {{rest_user}} -p {{rest_pass}}"
+    - name: rebalance
+      shell: "{{cli_bin}} rebalance -c {{couchbase_server_cluster_primary_node}} -u {{rest_user}} -p {{rest_pass}}"
+
+
+
+
+- hosts: tag_Name_qecouchbaseserverdatacluster1node22
+  remote_user: ubuntu
+  vars:
+   rest_user: "Administrator"
+   rest_pass: "password"
+   rest_port: 8091
+   cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+   couchbase_server_node: "{{hostvars[ec2_ip_address]['ec2_private_dns_name']}}"
+  tasks:
+    - name: set couchbase_server_cluster_primary_node variable
+      set_fact:
+        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+    - name: failover
+      shell: "{{cli_bin}} failover -c {{couchbase_server_cluster_primary_node}} --server-failover={{couchbase_server_node}}:{{rest_port}}  -u {{rest_user}} -p {{rest_pass}}"
+    - name: rebalance
+      shell: "{{cli_bin}} rebalance -c {{couchbase_server_cluster_primary_node}} -u {{rest_user}} -p {{rest_pass}}"
+
+
+
+
+- hosts: tag_Name_qecouchbaseserverdatacluster1node21
+  remote_user: ubuntu
+  vars:
+   rest_user: "Administrator"
+   rest_pass: "password"
+   rest_port: 8091
+   cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+   couchbase_server_node: "{{hostvars[ec2_ip_address]['ec2_private_dns_name']}}"
+  tasks:
+    - name: set couchbase_server_cluster_primary_node variable
+      set_fact:
+        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+    - name: failover
+      shell: "{{cli_bin}} failover -c {{couchbase_server_cluster_primary_node}} --server-failover={{couchbase_server_node}}:{{rest_port}}  -u {{rest_user}} -p {{rest_pass}}"
+    - name: rebalance
+      shell: "{{cli_bin}} rebalance -c {{couchbase_server_cluster_primary_node}} -u {{rest_user}} -p {{rest_pass}}"
+
+
+
+
+- hosts: tag_Name_qecouchbaseserverdatacluster1node20
+  remote_user: ubuntu
+  vars:
+   rest_user: "Administrator"
+   rest_pass: "password"
+   rest_port: 8091
+   cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+   couchbase_server_node: "{{hostvars[ec2_ip_address]['ec2_private_dns_name']}}"
+  tasks:
+    - name: set couchbase_server_cluster_primary_node variable
+      set_fact:
+        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+    - name: failover
+      shell: "{{cli_bin}} failover -c {{couchbase_server_cluster_primary_node}} --server-failover={{couchbase_server_node}}:{{rest_port}}  -u {{rest_user}} -p {{rest_pass}}"
+    - name: rebalance
+      shell: "{{cli_bin}} rebalance -c {{couchbase_server_cluster_primary_node}} -u {{rest_user}} -p {{rest_pass}}"
+
+
+
+
+- hosts: tag_Name_qecouchbaseserverdatacluster1node19
+  remote_user: ubuntu
+  vars:
+   rest_user: "Administrator"
+   rest_pass: "password"
+   rest_port: 8091
+   cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+   couchbase_server_node: "{{hostvars[ec2_ip_address]['ec2_private_dns_name']}}"
+  tasks:
+    - name: set couchbase_server_cluster_primary_node variable
+      set_fact:
+        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+    - name: failover
+      shell: "{{cli_bin}} failover -c {{couchbase_server_cluster_primary_node}} --server-failover={{couchbase_server_node}}:{{rest_port}}  -u {{rest_user}} -p {{rest_pass}}"
+    - name: rebalance
+      shell: "{{cli_bin}} rebalance -c {{couchbase_server_cluster_primary_node}} -u {{rest_user}} -p {{rest_pass}}"
+
+
+
+
+- hosts: tag_Name_qecouchbaseserverdatacluster1node18
+  remote_user: ubuntu
+  vars:
+   rest_user: "Administrator"
+   rest_pass: "password"
+   rest_port: 8091
+   cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+   couchbase_server_node: "{{hostvars[ec2_ip_address]['ec2_private_dns_name']}}"
+  tasks:
+    - name: set couchbase_server_cluster_primary_node variable
+      set_fact:
+        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+    - name: failover
+      shell: "{{cli_bin}} failover -c {{couchbase_server_cluster_primary_node}} --server-failover={{couchbase_server_node}}:{{rest_port}}  -u {{rest_user}} -p {{rest_pass}}"
+    - name: rebalance
+      shell: "{{cli_bin}} rebalance -c {{couchbase_server_cluster_primary_node}} -u {{rest_user}} -p {{rest_pass}}"
+
+
+
+
+- hosts: tag_Name_qecouchbaseserverdatacluster1node17
+  remote_user: ubuntu
+  vars:
+   rest_user: "Administrator"
+   rest_pass: "password"
+   rest_port: 8091
+   cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+   couchbase_server_node: "{{hostvars[ec2_ip_address]['ec2_private_dns_name']}}"
+  tasks:
+    - name: set couchbase_server_cluster_primary_node variable
+      set_fact:
+        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+    - name: failover
+      shell: "{{cli_bin}} failover -c {{couchbase_server_cluster_primary_node}} --server-failover={{couchbase_server_node}}:{{rest_port}}  -u {{rest_user}} -p {{rest_pass}}"
+    - name: rebalance
+      shell: "{{cli_bin}} rebalance -c {{couchbase_server_cluster_primary_node}} -u {{rest_user}} -p {{rest_pass}}"
+
+
+
+
+
+- hosts: tag_Name_qecouchbaseserverdatacluster1node16
+  remote_user: ubuntu
+  vars:
+   rest_user: "Administrator"
+   rest_pass: "password"
+   rest_port: 8091
+   cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+   couchbase_server_node: "{{hostvars[ec2_ip_address]['ec2_private_dns_name']}}"
+  tasks:
+    - name: set couchbase_server_cluster_primary_node variable
+      set_fact:
+        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+    - name: failover
+      shell: "{{cli_bin}} failover -c {{couchbase_server_cluster_primary_node}} --server-failover={{couchbase_server_node}}:{{rest_port}}  -u {{rest_user}} -p {{rest_pass}}"
+    - name: rebalance
+      shell: "{{cli_bin}} rebalance -c {{couchbase_server_cluster_primary_node}} -u {{rest_user}} -p {{rest_pass}}"
 
 
 
 # done
 - hosts: tag_Type_clients
+  remote_user: ubuntu
+  sudo: true
   tasks:
     - name: done! stop clients
-      shell: "ps aux | grep gideon | awk '{print $2}' | xargs -I '{}' kill -s 9 '{}'"
+      shell: "killall python"
       ignore_errors: True
 

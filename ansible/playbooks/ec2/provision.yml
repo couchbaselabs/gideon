@@ -8,15 +8,15 @@
     - shell: echo {{couchbase_server_cluster_primary_node}} > ../../temp_couchbase_server_cluster_primary_node
 
 - hosts: tag_Type_couchbaseserver_data_cluster1
+  remote_user: ubuntu
   vars:
-   data_path: "/data"
-   index_path: "/data"
+   data_path: "/mnt/cbdata"
+   index_path: "/mnt/cbdata"
    rest_user: "Administrator"
    rest_pass: "password"
    rest_port: 8091
    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
    couchbase_server_node: "{{hostvars[ec2_ip_address]['ec2_private_dns_name']}}"
-  remote_user: root
   tasks:
     - name: set couchbase_server_cluster_primary_node variable
       set_fact:
@@ -26,6 +26,7 @@
       shell: "{{cli_bin}} node-init -c {{couchbase_server_node}} --node-init-data-path={{data_path}} --node-init-index-path={{index_path}} -u {{rest_user}} -p {{rest_pass}}"
 
 - hosts: tag_Name_qecouchbaseserverdatacluster1node0
+  remote_user: ubuntu
   vars:
    cluster_user: "Administrator"
    cluster_pass: "password"
@@ -34,29 +35,28 @@
    ram_size: 6200
    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
    couchbase_server_node: "{{hostvars[ec2_ip_address]['ec2_private_dns_name']}}"
-  remote_user: root
   tasks:
     - name: init cluster
       shell: "{{cli_bin}} cluster-init -c {{couchbase_server_node}} --cluster-username={{cluster_user}} --cluster-password={{cluster_pass}} --cluster-port={{cluster_port}} --cluster-ramsize={{ram_size}} --services={{services}}"
 
 
-- hosts: tag_Phase_node_primary 
+- hosts: tag_Phase_node_primary
+  remote_user: ubuntu
   vars:
-   data_path: "/data"
-   index_path: "/data"
+   data_path: "/mnt/cbdata"
+   index_path: "/mnt/cbdata"
    rest_user: "Administrator"
    rest_pass: "password"
    rest_port: 8091
    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
    couchbase_server_node: "{{hostvars[ec2_ip_address]['ec2_private_dns_name']}}"
-  remote_user: root
   tasks:
     - name: set couchbase_server_cluster_primary_node variable
       set_fact:
         couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
     - name: join cluster
       shell: "{{cli_bin}} server-add -c {{couchbase_server_cluster_primary_node}} --server-add={{couchbase_server_node}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
-      when: couchbase_server_node != couchbase_server_cluster_primary_node 
+      when: couchbase_server_node != couchbase_server_cluster_primary_node
 
 - hosts: tag_Name_qecouchbaseserverdatacluster1node0
   vars:
@@ -65,13 +65,13 @@
     bucket0: "default"
     bucket1: "bucket1"
     bucket2: "bucket2"
-    bucket_size_main: 4096
-    bucket_size_small:  1024
+    bucket_size_main: 40000
+    bucket_size_small:  10000
     cli_bin:  "/opt/couchbase/bin/couchbase-cli"
     view_spec: "ddoc_2_views.json"
     ddoc_name: "scale"
-    ddoc_url: "http://{{groups['orchestrator'][0]}}:8092/{{bucket0}}/_design/{{ddoc_name}}"
     couchbase_server_node: "{{hostvars[ec2_ip_address]['ec2_private_dns_name']}}"
+    ddoc_url: "http://{{couchbase_server_node}}:8092/{{bucket0}}/_design/{{ddoc_name}}"
   tasks:
    - name: rebalance in nodes
      shell: "{{cli_bin}} rebalance -c {{couchbase_server_node}} -u {{rest_user}} -p {{rest_pass}}"
