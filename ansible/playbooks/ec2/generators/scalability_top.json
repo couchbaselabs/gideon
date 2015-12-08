@@ -1,0 +1,48 @@
+{
+    "Description": "Toplevel Stack",
+    "Parameters": {
+        "KeyName": {
+            "Description": "Name of an existing EC2 KeyPair to enable SSH access",
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "couchbaseStack": {
+            "Properties": {
+                "Parameters": {
+                    "KeyNameParameter": {
+                        "Ref": "KeyName"
+                    },
+                    "SecurityGroupIdParameter": {
+                        "Fn::GetAtt": [
+                            "vpcStack",
+                            "Outputs.SecurityGroupId"
+                        ]
+                    },
+                    "SubnetId1Parameter": {
+                        "Fn::GetAtt": [
+                            "vpcStack",
+                            "Outputs.SubnetId1"
+                        ]
+                    },
+                    "SubnetId2Parameter": {
+                        "Fn::GetAtt": [
+                            "vpcStack",
+                            "Outputs.SubnetId2"
+                        ]
+                    }
+                },
+                "TemplateURL": "https://s3.amazonaws.com/scalability-mcafee/scalability_couchbase.json",
+                "TimeoutInMinutes": 60
+            },
+            "Type": "AWS::CloudFormation::Stack"
+        },
+        "vpcStack": {
+            "Properties": {
+                "TemplateURL": "https://s3.amazonaws.com/scalability-mcafee/scalability_vpc.json",
+                "TimeoutInMinutes": 60
+            },
+            "Type": "AWS::CloudFormation::Stack"
+        }
+    }
+}

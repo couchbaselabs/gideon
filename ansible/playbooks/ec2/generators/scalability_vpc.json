@@ -1,0 +1,360 @@
+{
+    "Description": "VPC Script",
+    "Outputs": {
+        "SecurityGroupId": {
+            "Description": "Security Group ID",
+            "Value": {
+                "Ref": "CouchbaseSecurityGroup"
+            }
+        },
+        "SubnetId1": {
+            "Description": "Subnet ID1",
+            "Value": {
+                "Ref": "SUBNET1"
+            }
+        },
+        "SubnetId2": {
+            "Description": "Subnet ID2",
+            "Value": {
+                "Ref": "SUBNET2"
+            }
+        }
+    },
+    "Resources": {
+        "CouchbaseSecurityGroup": {
+            "Properties": {
+                "GroupDescription": "Allow access to Couchbase Server",
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": "22",
+                        "IpProtocol": "tcp",
+                        "ToPort": "22"
+                    },
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": "8091",
+                        "IpProtocol": "tcp",
+                        "ToPort": "8091"
+                    },
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": "8092",
+                        "IpProtocol": "tcp",
+                        "ToPort": "8092"
+                    },
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": "4984",
+                        "IpProtocol": "tcp",
+                        "ToPort": "4984"
+                    },
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": "4985",
+                        "IpProtocol": "tcp",
+                        "ToPort": "4985"
+                    },
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": "9876",
+                        "IpProtocol": "tcp",
+                        "ToPort": "9876"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::EC2::SecurityGroup"
+        },
+        "CouchbaseSecurityGroupIngress11209": {
+            "Properties": {
+                "FromPort": "11209",
+                "GroupId": {
+                    "Fn::GetAtt": [
+                        "CouchbaseSecurityGroup",
+                        "GroupId"
+                    ]
+                },
+                "IpProtocol": "tcp",
+                "SourceSecurityGroupId": {
+                    "Fn::GetAtt": [
+                        "CouchbaseSecurityGroup",
+                        "GroupId"
+                    ]
+                },
+                "ToPort": "11209"
+            },
+            "Type": "AWS::EC2::SecurityGroupIngress"
+        },
+        "CouchbaseSecurityGroupIngress11210": {
+            "Properties": {
+                "FromPort": "11210",
+                "GroupId": {
+                    "Fn::GetAtt": [
+                        "CouchbaseSecurityGroup",
+                        "GroupId"
+                    ]
+                },
+                "IpProtocol": "tcp",
+                "SourceSecurityGroupId": {
+                    "Fn::GetAtt": [
+                        "CouchbaseSecurityGroup",
+                        "GroupId"
+                    ]
+                },
+                "ToPort": "11210"
+            },
+            "Type": "AWS::EC2::SecurityGroupIngress"
+        },
+        "CouchbaseSecurityGroupIngress11211": {
+            "Properties": {
+                "FromPort": "11211",
+                "GroupId": {
+                    "Fn::GetAtt": [
+                        "CouchbaseSecurityGroup",
+                        "GroupId"
+                    ]
+                },
+                "IpProtocol": "tcp",
+                "SourceSecurityGroupId": {
+                    "Fn::GetAtt": [
+                        "CouchbaseSecurityGroup",
+                        "GroupId"
+                    ]
+                },
+                "ToPort": "11211"
+            },
+            "Type": "AWS::EC2::SecurityGroupIngress"
+        },
+        "CouchbaseSecurityGroupIngress21100": {
+            "Properties": {
+                "FromPort": "21100",
+                "GroupId": {
+                    "Fn::GetAtt": [
+                        "CouchbaseSecurityGroup",
+                        "GroupId"
+                    ]
+                },
+                "IpProtocol": "tcp",
+                "SourceSecurityGroupId": {
+                    "Fn::GetAtt": [
+                        "CouchbaseSecurityGroup",
+                        "GroupId"
+                    ]
+                },
+                "ToPort": "21299"
+            },
+            "Type": "AWS::EC2::SecurityGroupIngress"
+        },
+        "CouchbaseSecurityGroupIngress4369": {
+            "Properties": {
+                "FromPort": "4369",
+                "GroupId": {
+                    "Fn::GetAtt": [
+                        "CouchbaseSecurityGroup",
+                        "GroupId"
+                    ]
+                },
+                "IpProtocol": "tcp",
+                "SourceSecurityGroupId": {
+                    "Fn::GetAtt": [
+                        "CouchbaseSecurityGroup",
+                        "GroupId"
+                    ]
+                },
+                "ToPort": "4369"
+            },
+            "Type": "AWS::EC2::SecurityGroupIngress"
+        },
+        "CouchbaseSecurityGroupIngress5984": {
+            "Properties": {
+                "FromPort": "5984",
+                "GroupId": {
+                    "Fn::GetAtt": [
+                        "CouchbaseSecurityGroup",
+                        "GroupId"
+                    ]
+                },
+                "IpProtocol": "tcp",
+                "SourceSecurityGroupId": {
+                    "Fn::GetAtt": [
+                        "CouchbaseSecurityGroup",
+                        "GroupId"
+                    ]
+                },
+                "ToPort": "5984"
+            },
+            "Type": "AWS::EC2::SecurityGroupIngress"
+        },
+        "GATEWAY": {
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "gateway-scalability-",
+                                    {
+                                        "Ref": "AWS::Region"
+                                    }
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::InternetGateway"
+        },
+        "ROUTE": {
+            "Properties": {
+                "DestinationCidrBlock": "0.0.0.0/0",
+                "GatewayId": {
+                    "Ref": "GATEWAY"
+                },
+                "RouteTableId": {
+                    "Ref": "ROUTETABLE"
+                }
+            },
+            "Type": "AWS::EC2::Route"
+        },
+        "ROUTETABLE": {
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "routetable-scalabilty-",
+                                    {
+                                        "Ref": "AWS::Region"
+                                    }
+                                ]
+                            ]
+                        }
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::EC2::RouteTable"
+        },
+        "SUBNET1": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "CidrBlock": "10.0.0.0/17",
+                "MapPublicIpOnLaunch": "true",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "subnet1-scalability-",
+                                    {
+                                        "Ref": "AWS::Region"
+                                    }
+                                ]
+                            ]
+                        }
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::EC2::Subnet"
+        },
+        "SUBNET2": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1c",
+                "CidrBlock": "10.0.128.0/17",
+                "MapPublicIpOnLaunch": "true",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "subnet2-scalability-",
+                                    {
+                                        "Ref": "AWS::Region"
+                                    }
+                                ]
+                            ]
+                        }
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::EC2::Subnet"
+        },
+        "SUBNETROUTETABLEASSOCATION1": {
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "ROUTETABLE"
+                },
+                "SubnetId": {
+                    "Ref": "SUBNET1"
+                }
+            },
+            "Type": "AWS::EC2::SubnetRouteTableAssociation"
+        },
+        "SUBNETROUTETABLEASSOCATION2": {
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "ROUTETABLE"
+                },
+                "SubnetId": {
+                    "Ref": "SUBNET2"
+                }
+            },
+            "Type": "AWS::EC2::SubnetRouteTableAssociation"
+        },
+        "VPC": {
+            "Properties": {
+                "CidrBlock": "10.0.0.0/16",
+                "EnableDnsHostnames": "true",
+                "EnableDnsSupport": "true",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "vpc-scalabilty-",
+                                    {
+                                        "Ref": "AWS::Region"
+                                    }
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::VPC"
+        },
+        "VPCGATEWAYATTACHMENT": {
+            "Properties": {
+                "InternetGatewayId": {
+                    "Ref": "GATEWAY"
+                },
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::EC2::VPCGatewayAttachment"
+        }
+    }
+}

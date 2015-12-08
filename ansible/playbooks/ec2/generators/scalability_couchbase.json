@@ -1,0 +1,1249 @@
+{
+    "Description": "Couchbase Servers",
+    "Parameters": {
+        "KeyNameParameter": {
+            "Description": "KeyName",
+            "Type": "AWS::EC2::KeyPair::KeyName"
+        },
+        "SecurityGroupIdParameter": {
+            "Description": "SecurityGroupId",
+            "Type": "AWS::EC2::SecurityGroup::Id"
+        },
+        "SubnetId1Parameter": {
+            "Description": "SubnetId",
+            "Type": "AWS::EC2::Subnet::Id"
+        },
+        "SubnetId2Parameter": {
+            "Description": "SubnetId",
+            "Type": "AWS::EC2::Subnet::Id"
+        }
+    },
+    "Resources": {
+        "qeclients0": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-3eb8fd54",
+                "InstanceType": "c3.xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "qeclients0"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "clients"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qeclients1": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-3eb8fd54",
+                "InstanceType": "c3.xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "qeclients1"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "clients"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qeclients2": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-3eb8fd54",
+                "InstanceType": "c3.xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "qeclients2"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "clients"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qeclients3": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-3eb8fd54",
+                "InstanceType": "c3.xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "qeclients3"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "clients"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node0": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node0"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_primary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node1": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node1"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_primary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node10": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node10"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_primary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node11": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node11"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_primary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node12": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node12"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_primary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node13": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node13"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_primary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node14": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node14"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_primary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node15": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node15"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_primary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node16": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node16"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_secondary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node17": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node17"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_secondary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node18": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node18"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_secondary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node19": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node19"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_secondary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node2": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node2"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_primary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node20": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node20"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_secondary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node21": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node21"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_secondary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node22": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node22"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_secondary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node23": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node23"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_secondary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node24": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node24"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_secondary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node25": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node25"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_secondary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node26": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node26"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_secondary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node27": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node27"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_secondary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node28": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node28"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_secondary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node29": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node29"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_secondary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node3": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node3"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_primary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node4": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node4"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_primary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node5": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node5"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_primary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node6": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node6"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_primary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node7": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node7"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_primary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node8": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node8"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_primary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qecouchbaseserverdatacluster1node9": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-a63677cc",
+                "InstanceType": "r3.4xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Group",
+                        "Value": "Group 1"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "qecouchbaseserverdatacluster1node9"
+                    },
+                    {
+                        "Key": "Phase",
+                        "Value": "node_primary"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "couchbaseserver_data_cluster1"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        }
+    }
+}
