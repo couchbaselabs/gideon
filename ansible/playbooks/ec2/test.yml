@@ -3,15 +3,15 @@
   remote_user: ubuntu
   sudo: true
   vars:
-   ops_main: 25000
-   ops_small: 20000
-   create_perc: 30
-   get_perc: 60
-   delete_perc: 10
-   sizes: "756 1024"
-   bucket0: "default"
-   bucket1: "bucket1"
-   bucket2: "bucket2"
+    ops_main: 25000
+    ops_small: 20000
+    create_perc: 30
+    get_perc: 60
+    delete_perc: 10
+    sizes: "756 1024"
+    bucket0: "default"
+    bucket1: "bucket1"
+    bucket2: "bucket2"
   tasks:
     - name: set couchbase_server_cluster_primary_node variable
       set_fact:
@@ -48,10 +48,10 @@
   tasks:
     - name: set couchbase_server_cluster_primary_node variable
       set_fact:
-	couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
-
+        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
     - name: add 2 nodes
       shell: "{{cli_bin}} server-add -c {{couchbase_server_cluster_primary_node}}:{{rest_port}} --server-add={{couchbase_server_node}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
+
 - hosts: tag_Name_qecouchbaseserverdatacluster1node0
   vars:
     rest_user: "Administrator"
@@ -76,7 +76,7 @@
   tasks:
     - name: set couchbase_server_cluster_primary_node variable
       set_fact:
-	couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
 
     - name: add 2 nodes
       shell: "{{cli_bin}} server-add -c {{couchbase_server_cluster_primary_node}}:{{rest_port}} --server-add={{couchbase_server_node}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
@@ -103,7 +103,7 @@
   tasks:
     - name: set couchbase_server_cluster_primary_node variable
       set_fact:
-	couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
 
     - name: add 2 nodes
       shell: "{{cli_bin}} server-add -c {{couchbase_server_cluster_primary_node}}:{{rest_port}} --server-add={{couchbase_server_node}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
@@ -131,7 +131,7 @@
   tasks:
     - name: set couchbase_server_cluster_primary_node variable
       set_fact:
-	couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
 
     - name: add 2 nodes
       shell: "{{cli_bin}} server-add -c {{couchbase_server_cluster_primary_node}}:{{rest_port}} --server-add={{couchbase_server_node}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
@@ -159,7 +159,7 @@
   tasks:
     - name: set couchbase_server_cluster_primary_node variable
       set_fact:
-	couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
 
     - name: add 2 nodes
       shell: "{{cli_bin}} server-add -c {{couchbase_server_cluster_primary_node}}:{{rest_port}} --server-add={{couchbase_server_node}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
@@ -187,7 +187,7 @@
   tasks:
     - name: set couchbase_server_cluster_primary_node variable
       set_fact:
-	couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
+        couchbase_server_cluster_primary_node: "{{ lookup('file', '../../temp_couchbase_server_cluster_primary_node') }}"
 
     - name: add 2 nodes
       shell: "{{cli_bin}} server-add -c {{couchbase_server_cluster_primary_node}}:{{rest_port}} --server-add={{couchbase_server_node}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"

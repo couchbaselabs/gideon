@@ -77,6 +77,151 @@
             },
             "Type": "AWS::EC2::Instance"
         },
+        "qeclients10": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-3eb8fd54",
+                "InstanceType": "c3.xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "qeclients10"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "clients"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qeclients11": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-3eb8fd54",
+                "InstanceType": "c3.xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "qeclients11"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "clients"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qeclients12": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-3eb8fd54",
+                "InstanceType": "c3.xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "qeclients12"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "clients"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qeclients13": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-3eb8fd54",
+                "InstanceType": "c3.xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "qeclients13"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "clients"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qeclients14": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-3eb8fd54",
+                "InstanceType": "c3.xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "qeclients14"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "clients"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
         "qeclients2": {
             "Properties": {
                 "AvailabilityZone": "us-east-1a",
@@ -126,6 +271,180 @@
                     {
                         "Key": "Name",
                         "Value": "qeclients3"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "clients"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qeclients4": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-3eb8fd54",
+                "InstanceType": "c3.xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "qeclients4"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "clients"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qeclients5": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-3eb8fd54",
+                "InstanceType": "c3.xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "qeclients5"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "clients"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qeclients6": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-3eb8fd54",
+                "InstanceType": "c3.xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "qeclients6"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "clients"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qeclients7": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-3eb8fd54",
+                "InstanceType": "c3.xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "qeclients7"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "clients"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qeclients8": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-3eb8fd54",
+                "InstanceType": "c3.xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "qeclients8"
+                    },
+                    {
+                        "Key": "Type",
+                        "Value": "clients"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "qeclients9": {
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageId": "ami-3eb8fd54",
+                "InstanceType": "c3.xlarge",
+                "KeyName": {
+                    "Ref": "KeyNameParameter"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupIdParameter"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId1Parameter"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "qeclients9"
                     },
                     {
                         "Key": "Type",

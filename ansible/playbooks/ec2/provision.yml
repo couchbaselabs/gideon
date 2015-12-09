@@ -32,7 +32,7 @@
    cluster_pass: "password"
    cluster_port: 8091
    services: "data"
-   ram_size: 6200
+   ram_size: 80000
    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
    couchbase_server_node: "{{hostvars[ec2_ip_address]['ec2_private_dns_name']}}"
   tasks:
