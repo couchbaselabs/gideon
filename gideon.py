@@ -50,7 +50,22 @@ def argsToTask(args):
     msg_copy = copy.deepcopy(msg)
     msg_copy['template'] = {}
     msg_copy['template']['cc_queues'] = None
-    msg_copy['template']['kv'] = msg
+    msg_copy['template']['kv'] = {
+        'bucket': bucket,
+        'active_hosts' : active_hosts,
+        'ops_sec' : ops_sec,
+        'sizes': sizes,
+        'rating': "$flo",
+        'city':  "$str",
+        'state': "$str1",
+        'activity': ["$str20","$str20","$str20","$str5","$str15"],
+        'profile': {
+             'name':  "$str10",
+             'likes': "$int",
+             'online': "$boo",
+             'friends': ["$str","$str","$str","$str","$str"]
+         }
+    }
 
     return msg_copy
 
