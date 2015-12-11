@@ -49,8 +49,8 @@
   tasks:
     - name: rebalance
       shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
-    - name: wait for 2 minutes
-      wait_for: timeout=120
+    - name: wait for 1 minute
+      wait_for: timeout=60
 
 - hosts: kvm-s63708.sc.couchbase.com:kvm-s63808.sc.couchbase.com
   vars:
@@ -71,8 +71,8 @@
   tasks:
     - name: rebalance
       shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
-    - name: wait for 2 minutes
-      wait_for: timeout=120
+    - name: wait for 1 minute
+      wait_for: timeout=60
 
 - hosts: kvm-s63709.sc.couchbase.com:kvm-s63809.sc.couchbase.com
   vars:
@@ -93,8 +93,8 @@
   tasks:
     - name: rebalance
       shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
-    - name: wait for 2 minutes
-      wait_for: timeout=120
+    - name: wait for 1 minute
+      wait_for: timeout=60
 
 - hosts: kvm-s63710.sc.couchbase.com:kvm-s63810.sc.couchbase.com
   vars:
@@ -115,8 +115,8 @@
   tasks:
     - name: rebalance
       shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
-    - name: wait for 2 minutes
-      wait_for: timeout=120
+    - name: wait for 1 minute
+      wait_for: timeout=60
 
 - hosts: kvm-s63711.sc.couchbase.com:kvm-s63811.sc.couchbase.com
   vars:
@@ -137,8 +137,8 @@
   tasks:
     - name: rebalance
       shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
-    - name: wait for 2 minutes
-      wait_for: timeout=120
+    - name: wait for 1 minute
+      wait_for: timeout=60
 
 - hosts: kvm-s63712.sc.couchbase.com:kvm-s63812.sc.couchbase.com
   vars:
@@ -159,8 +159,8 @@
   tasks:
     - name: rebalance
       shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
-    - name: wait for 2 minutes
-      wait_for: timeout=120
+    - name: wait for 1 minute
+      wait_for: timeout=60
 
 
 
