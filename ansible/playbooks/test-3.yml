@@ -18,15 +18,15 @@
     - name: start workload for bucket0
       shell: "nohup python gideon.py --ops {{ops_main}} --create {{create_perc}} --get {{get_perc}} --delete {{delete_perc}} --hosts {{orchestrator}} --bucket {{bucket0}} --sizes {{sizes}} &"
       args:
-	  chdir: gideon/
+          chdir: gideon/
     - name: start workload for bucket1
       shell: "nohup python gideon.py --ops {{ops_small}} --create {{create_perc}} --get {{get_perc}} --delete {{delete_perc}} --hosts {{orchestrator}} --bucket {{bucket1}}&"
       args:
-	  chdir: gideon/
+          chdir: gideon/
     - name: start workload for bucket2
       shell: "nohup python gideon.py --ops {{ops_small}} --create {{create_perc}} --get {{get_perc}} --delete {{delete_perc}} --hosts {{orchestrator}} --bucket {{bucket2}}&"
       args:
-	  chdir: gideon/
+          chdir: gideon/
 
 # do rebalances  @2x increments
 - hosts: kvm-s63707.sc.couchbase.com:kvm-s63807.sc.couchbase.com
