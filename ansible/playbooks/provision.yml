@@ -26,7 +26,7 @@
       shell: "{{cli_bin}} cluster-init -c {{inventory_hostname}} --cluster-username={{cluster_user}} --cluster-password={{cluster_pass}} --cluster-port={{cluster_port}} --cluster-ramsize={{ram_size}} --services={{services}}"
 
 
-- hosts: couchbaseprimary
+- hosts: couchbaseservers
   vars:
    data_path: "/data"
    index_path: "/data"
@@ -37,8 +37,8 @@
   remote_user: root
   tasks:
     - name: join cluster
-      shell: "{{cli_bin}} server-add -c {{groups['orchestrator'][0]}}:{{rest_port}} --server-add={{inventory_hostname}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
-      when: inventory_hostname != groups['orchestrator'][0]
+      shell: "{{cli_bin}} server-add -c {{groups['orchestrator'][0]}}:{{rest_port}} --server-add={{hostvars[inventory_hostname]['internal']}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
+      when: hostvars[inventory_hostname]['phase'] == 'primary'
 
 - hosts: orchestrator
   vars:

@@ -1,7 +1,7 @@
 - hosts: clients
   tasks:
     - name: stop clients
-      shell: "ps aux | grep gideon | awk '{print $2}' | xargs -I '{}' kill -s 9 '{}'"
+      shell: "killall python"
       ignore_errors: True
 
 
@@ -21,13 +21,24 @@
    - name: delete bucket2
      shell: "{{cli_bin}}  bucket-delete -c  {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}} --bucket={{bucket2}}"
 
+
 - hosts: couchbaseservers
+  vars:
+   rest_user: "Administrator"
+   rest_pass: "password"
+   cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+   internal_ip: "{{hostvars[inventory_hostname]['internal']}}"
+  tasks:
+   - name: remove node
+     shell: "{{cli_bin}} failover -c {{groups['orchestrator'][0]}} --server-failover={{internal_ip}} -u {{rest_user}} -p {{rest_pass}} --force"
+     when: inventory_hostname != groups['orchestrator'][0]
+
+- hosts: orchestrator
   vars:
    rest_user: "Administrator"
    rest_pass: "password"
    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
   tasks:
    - name: rebalance out node
-     shell: "{{cli_bin}} rebalance -c {{groups['orchestrator'][0]}} --server-remove={{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
-     when: inventory_hostname != groups['orchestrator'][0]
+     shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} --server-remove={{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
 
