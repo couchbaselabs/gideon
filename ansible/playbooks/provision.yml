@@ -7,10 +7,11 @@
    rest_pass: "password"
    rest_port: 8091
    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+   internal_ip: "{{hostvars[inventory_hostname]['internal']}}"
   remote_user: root
   tasks:
     - name: init data paths
-      shell: "{{cli_bin}} node-init -c {{inventory_hostname}} --node-init-data-path={{data_path}} --node-init-index-path={{index_path}} -u {{rest_user}} -p {{rest_pass}}"
+      shell: "{{cli_bin}} node-init -c {{internal_ip}} --node-init-data-path={{data_path}} --node-init-index-path={{index_path}} -u {{rest_user}} -p {{rest_pass}}"
 
 - hosts: orchestrator
   vars:
@@ -20,10 +21,11 @@
    services: "data"
    ram_size: 6200
    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+   internal_ip: "{{hostvars[inventory_hostname]['internal']}}"
   remote_user: root
   tasks:
     - name: init cluster
-      shell: "{{cli_bin}} cluster-init -c {{inventory_hostname}} --cluster-username={{cluster_user}} --cluster-password={{cluster_pass}} --cluster-port={{cluster_port}} --cluster-ramsize={{ram_size}} --services={{services}}"
+      shell: "{{cli_bin}} cluster-init -c {{internal_ip}} --cluster-username={{cluster_user}} --cluster-password={{cluster_pass}} --cluster-port={{cluster_port}} --cluster-ramsize={{ram_size}} --services={{services}}"
 
 
 - hosts: couchbaseservers
@@ -34,10 +36,11 @@
    rest_pass: "password"
    rest_port: 8091
    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+   internal_ip: "{{hostvars[inventory_hostname]['internal']}}"
   remote_user: root
   tasks:
     - name: join cluster
-      shell: "{{cli_bin}} server-add -c {{groups['orchestrator'][0]}}:{{rest_port}} --server-add={{hostvars[inventory_hostname]['internal']}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
+      shell: "{{cli_bin}} server-add -c {{groups['orchestrator'][0]}}:{{rest_port}} --server-add={{internal_ip}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
       when: hostvars[inventory_hostname]['phase'] == 'primary'
 
 - hosts: orchestrator
@@ -53,15 +56,16 @@
     view_spec: "../specs/ddoc_2_views.json"
     ddoc_name: "scale"
     ddoc_url: "http://{{groups['orchestrator'][0]}}:8092/{{bucket0}}/_design/{{ddoc_name}}"
+    internal_ip: "{{hostvars[inventory_hostname]['internal']}}"
   tasks:
    - name: rebalance in nodes
-     shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
+     shell: "{{cli_bin}} rebalance -c {{internal_ip}} -u {{rest_user}} -p {{rest_pass}}"
    - name: create bucket0
-     shell: "{{cli_bin}}  bucket-create -c  {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}} --bucket={{bucket0}} --bucket-ramsize={{bucket_size_main}} --bucket-type=couchbase --wait"
+     shell: "{{cli_bin}}  bucket-create -c  {{internal_ip}} -u {{rest_user}} -p {{rest_pass}} --bucket={{bucket0}} --bucket-ramsize={{bucket_size_main}} --bucket-type=couchbase --wait"
    - name: create bucket1
-     shell: "{{cli_bin}}  bucket-create -c  {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}} --bucket={{bucket1}} --bucket-ramsize={{bucket_size_small}} --bucket-type=couchbase --wait"
+     shell: "{{cli_bin}}  bucket-create -c  {{internal_ip}} -u {{rest_user}} -p {{rest_pass}} --bucket={{bucket1}} --bucket-ramsize={{bucket_size_small}} --bucket-type=couchbase --wait"
    - name: create bucket2
-     shell: "{{cli_bin}}  bucket-create -c  {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}} --bucket={{bucket2}} --bucket-ramsize={{bucket_size_small}} --bucket-type=couchbase --wait"
+     shell: "{{cli_bin}}  bucket-create -c  {{internal_ip}} -u {{rest_user}} -p {{rest_pass}} --bucket={{bucket2}} --bucket-ramsize={{bucket_size_small}} --bucket-type=couchbase --wait"
    - name: copy view spec
      copy: src="{{view_spec}}"  dest=/tmp/views.json
    - name: post view spec

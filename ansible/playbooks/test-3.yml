@@ -18,15 +18,15 @@
     - name: start workload for bucket0
       shell: "nohup python gideon.py --ops {{ops_main}} --create {{create_perc}} --get {{get_perc}} --delete {{delete_perc}} --hosts {{orchestrator}} --bucket {{bucket0}} --sizes {{sizes}} &"
       args:
-          chdir: gideon/
+	  chdir: gideon/
     - name: start workload for bucket1
       shell: "nohup python gideon.py --ops {{ops_small}} --create {{create_perc}} --get {{get_perc}} --delete {{delete_perc}} --hosts {{orchestrator}} --bucket {{bucket1}}&"
       args:
-          chdir: gideon/
+	  chdir: gideon/
     - name: start workload for bucket2
       shell: "nohup python gideon.py --ops {{ops_small}} --create {{create_perc}} --get {{get_perc}} --delete {{delete_perc}} --hosts {{orchestrator}} --bucket {{bucket2}}&"
       args:
-          chdir: gideon/
+	  chdir: gideon/
 
 # do rebalances  @2x increments
 - hosts: kvm-s63707.sc.couchbase.com:kvm-s63807.sc.couchbase.com
@@ -36,9 +36,11 @@
     rest_pass: "password"
     rest_port: 8091
     cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+    orchestrator:  "{{hostvars[groups['orchestrator'][0]]['internal']}}"
   tasks:
     - name: add 2 nodes
-      shell: "{{cli_bin}} server-add -c {{groups['orchestrator'][0]}}:{{rest_port}} --server-add={{hostvars[inventory_hostname]['internal']}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
+      shell: "{{cli_bin}} server-add -c {{orchestrator}} --server-add={{hostvars[inventory_hostname]['internal']}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
+
 - hosts: orchestrator
   vars:
     rest_user: "Administrator"
@@ -47,8 +49,8 @@
   tasks:
     - name: rebalance
       shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
-    - name: wait for 10 minutes
-      wait_for: timeout=600
+    - name: wait for 2 minutes
+      wait_for: timeout=120
 
 - hosts: kvm-s63708.sc.couchbase.com:kvm-s63808.sc.couchbase.com
   vars:
@@ -57,6 +59,7 @@
     rest_pass: "password"
     rest_port: 8091
     cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+    orchestrator:  "{{hostvars[groups['orchestrator'][0]]['internal']}}"
   tasks:
     - name: add 2 nodes
       shell: "{{cli_bin}} server-add -c {{groups['orchestrator'][0]}}:{{rest_port}} --server-add={{hostvars[inventory_hostname]['internal']}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
@@ -68,8 +71,8 @@
   tasks:
     - name: rebalance
       shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
-    - name: wait for 10 minutes
-      wait_for: timeout=600
+    - name: wait for 2 minutes
+      wait_for: timeout=120
 
 - hosts: kvm-s63709.sc.couchbase.com:kvm-s63809.sc.couchbase.com
   vars:
@@ -78,6 +81,7 @@
     rest_pass: "password"
     rest_port: 8091
     cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+    orchestrator:  "{{hostvars[groups['orchestrator'][0]]['internal']}}"
   tasks:
     - name: add 2 nodes
       shell: "{{cli_bin}} server-add -c {{groups['orchestrator'][0]}}:{{rest_port}} --server-add={{hostvars[inventory_hostname]['internal']}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
@@ -89,8 +93,8 @@
   tasks:
     - name: rebalance
       shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
-    - name: wait for 10 minutes
-      wait_for: timeout=600
+    - name: wait for 2 minutes
+      wait_for: timeout=120
 
 - hosts: kvm-s63710.sc.couchbase.com:kvm-s63810.sc.couchbase.com
   vars:
@@ -99,6 +103,7 @@
     rest_pass: "password"
     rest_port: 8091
     cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+    orchestrator:  "{{hostvars[groups['orchestrator'][0]]['internal']}}"
   tasks:
     - name: add 2 nodes
       shell: "{{cli_bin}} server-add -c {{groups['orchestrator'][0]}}:{{rest_port}} --server-add={{hostvars[inventory_hostname]['internal']}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
@@ -110,8 +115,8 @@
   tasks:
     - name: rebalance
       shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
-    - name: wait for 10 minutes
-      wait_for: timeout=600
+    - name: wait for 2 minutes
+      wait_for: timeout=120
 
 - hosts: kvm-s63711.sc.couchbase.com:kvm-s63811.sc.couchbase.com
   vars:
@@ -120,6 +125,7 @@
     rest_pass: "password"
     rest_port: 8091
     cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+    orchestrator:  "{{hostvars[groups['orchestrator'][0]]['internal']}}"
   tasks:
     - name: add 2 nodes
       shell: "{{cli_bin}} server-add -c {{groups['orchestrator'][0]}}:{{rest_port}} --server-add={{hostvars[inventory_hostname]['internal']}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
@@ -131,8 +137,8 @@
   tasks:
     - name: rebalance
       shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
-    - name: wait for 10 minutes
-      wait_for: timeout=600
+    - name: wait for 2 minutes
+      wait_for: timeout=120
 
 - hosts: kvm-s63712.sc.couchbase.com:kvm-s63812.sc.couchbase.com
   vars:
@@ -141,6 +147,7 @@
     rest_pass: "password"
     rest_port: 8091
     cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+    orchestrator:  "{{hostvars[groups['orchestrator'][0]]['internal']}}"
   tasks:
     - name: add 2 nodes
       shell: "{{cli_bin}} server-add -c {{groups['orchestrator'][0]}}:{{rest_port}} --server-add={{hostvars[inventory_hostname]['internal']}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
@@ -152,8 +159,8 @@
   tasks:
     - name: rebalance
       shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
-    - name: wait for 10 minutes
-      wait_for: timeout=600
+    - name: wait for 2 minutes
+      wait_for: timeout=120
 
 
 
