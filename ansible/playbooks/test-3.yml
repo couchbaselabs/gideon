@@ -60,7 +60,7 @@
           chdir: gideon/
 
 # do rebalances  @2x increments
-- hosts: kvm-s63707.sc.couchbase.com:kvm-s63807.sc.couchbase.com
+- hosts: kvm-s63704.sc.couchbase.com:kvm-s63804.sc.couchbase.com
   vars:
     rest_port: 8091
     rest_user: "Administrator"
@@ -83,7 +83,7 @@
     - name: wait for 1 minute
       wait_for: timeout=60
 
-- hosts: kvm-s63708.sc.couchbase.com:kvm-s63808.sc.couchbase.com
+- hosts: kvm-s63705.sc.couchbase.com:kvm-s63805.sc.couchbase.com
   vars:
     rest_port: 8091
     rest_user: "Administrator"
@@ -105,7 +105,7 @@
     - name: wait for 1 minute
       wait_for: timeout=60
 
-- hosts: kvm-s63709.sc.couchbase.com:kvm-s63809.sc.couchbase.com
+- hosts: kvm-s63706.sc.couchbase.com:kvm-s63806.sc.couchbase.com
   vars:
     rest_port: 8091
     rest_user: "Administrator"
@@ -126,74 +126,6 @@
       shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
     - name: wait for 1 minute
       wait_for: timeout=60
-
-- hosts: kvm-s63710.sc.couchbase.com:kvm-s63810.sc.couchbase.com
-  vars:
-    rest_port: 8091
-    rest_user: "Administrator"
-    rest_pass: "password"
-    rest_port: 8091
-    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
-    orchestrator:  "{{hostvars[groups['orchestrator'][0]]['internal']}}"
-  tasks:
-    - name: add 2 nodes
-      shell: "{{cli_bin}} server-add -c {{groups['orchestrator'][0]}}:{{rest_port}} --server-add={{hostvars[inventory_hostname]['internal']}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
-- hosts: orchestrator
-  vars:
-    rest_user: "Administrator"
-    rest_pass: "password"
-    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
-  tasks:
-    - name: rebalance
-      shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
-    - name: wait for 1 minute
-      wait_for: timeout=60
-
-- hosts: kvm-s63711.sc.couchbase.com:kvm-s63811.sc.couchbase.com
-  vars:
-    rest_port: 8091
-    rest_user: "Administrator"
-    rest_pass: "password"
-    rest_port: 8091
-    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
-    orchestrator:  "{{hostvars[groups['orchestrator'][0]]['internal']}}"
-  tasks:
-    - name: add 2 nodes
-      shell: "{{cli_bin}} server-add -c {{groups['orchestrator'][0]}}:{{rest_port}} --server-add={{hostvars[inventory_hostname]['internal']}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
-- hosts: orchestrator
-  vars:
-    rest_user: "Administrator"
-    rest_pass: "password"
-    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
-  tasks:
-    - name: rebalance
-      shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
-    - name: wait for 1 minute
-      wait_for: timeout=60
-
-- hosts: kvm-s63712.sc.couchbase.com:kvm-s63812.sc.couchbase.com
-  vars:
-    rest_port: 8091
-    rest_user: "Administrator"
-    rest_pass: "password"
-    rest_port: 8091
-    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
-    orchestrator:  "{{hostvars[groups['orchestrator'][0]]['internal']}}"
-  tasks:
-    - name: add 2 nodes
-      shell: "{{cli_bin}} server-add -c {{groups['orchestrator'][0]}}:{{rest_port}} --server-add={{hostvars[inventory_hostname]['internal']}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
-- hosts: orchestrator
-  vars:
-    rest_user: "Administrator"
-    rest_pass: "password"
-    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
-  tasks:
-    - name: rebalance
-      shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
-    - name: wait for 1 minute
-      wait_for: timeout=60
-
-
 
 # failover node
 - hosts: orchestrator
@@ -203,7 +135,7 @@
     rest_user: "Administrator"
     rest_pass: "password"
     cli_bin:  "/opt/couchbase/bin/couchbase-cli"
-    fail_node: "192.168.150.20"
+    fail_node: "192.168.150.17"
   tasks:
     - name: remove node
       shell: "{{cli_bin}} failover -c {{inventory_hostname}}:{{rest_port}} --server-failover={{fail_node}}:{{rest_port}} -u {{rest_user}} -p {{rest_pass}}"
@@ -218,7 +150,7 @@
     rest_user: "Administrator"
     rest_pass: "password"
     cli_bin:  "/opt/couchbase/bin/couchbase-cli"
-    fail_node: "192.168.150.21"
+    fail_node: "192.168.150.18"
   tasks:
     - name: remove node
       shell: "{{cli_bin}} failover -c {{inventory_hostname}}:{{rest_port}} --server-failover={{fail_node}}:{{rest_port}} -u {{rest_user}} -p {{rest_pass}}"
@@ -233,7 +165,7 @@
     rest_user: "Administrator"
     rest_pass: "password"
     cli_bin:  "/opt/couchbase/bin/couchbase-cli"
-    fail_node: "192.168.150.22"
+    fail_node: "192.168.150.29"
   tasks:
     - name: remove node
       shell: "{{cli_bin}} failover -c {{inventory_hostname}}:{{rest_port}} --server-failover={{fail_node}}:{{rest_port}} -u {{rest_user}} -p {{rest_pass}}"
@@ -249,10 +181,12 @@
     rest_user: "Administrator"
     rest_pass: "password"
     cli_bin:  "/opt/couchbase/bin/couchbase-cli"
-    fail_node: "192.168.150.23"
+    fail_node: "192.168.150.30"
   tasks:
     - name: force remove
       shell: "{{cli_bin}} failover -c {{inventory_hostname}}:{{rest_port}} --server-failover={{fail_node}}:{{rest_port}} -u {{rest_user}} -p {{rest_pass}} --force"
+    - name: rebalance
+      shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
 
 # done
 - hosts: clients
