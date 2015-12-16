@@ -53,7 +53,7 @@
     bucket_size_main: 4096
     bucket_size_small:  1024
     cli_bin:  "/opt/couchbase/bin/couchbase-cli"
-    view_spec: "../specs/ddoc_2_views.json"
+    view_spec: "../specs/ddoc_greenboard_views.json"
     ddoc_name: "scale"
     ddoc_url: "http://{{groups['orchestrator'][0]}}:8092/{{bucket0}}/_design/{{ddoc_name}}"
     internal_ip: "{{hostvars[inventory_hostname]['internal']}}"
