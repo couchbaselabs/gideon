@@ -64,7 +64,19 @@ def argsToTask(args):
              'likes': "$int",
              'online': "$boo",
              'friends': ["$str","$str","$str","$str","$str"]
-         }
+         },
+        "build_id": "$int4",
+        "claim": "$str40",
+        "name": "$str10",
+        "url": "$str20",
+        "component": "$str1",
+        "failCount": 0,
+        "totalCount": "$int2",
+        "result": "SUCCESS",
+        "duration": "$int4",
+        "priority": "$str1",
+        "os": "$str1",
+        "build": "gideon-$int1"
     }
 
     return msg_copy
