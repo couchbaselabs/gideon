@@ -4,6 +4,7 @@ import yaml
 from loader import start_client_processes
 
 parser = argparse.ArgumentParser(description='Mighty Small CB Loader')
+subparsers = parser.add_subparsers(help="workload type")
 
 def run_workload(args):
     task = argsToTask(args)
@@ -83,29 +84,7 @@ def argsToTask(args):
 
 
 
-if __name__ == "__main__":
-
-    ## ARGS ##
-    parser.add_argument("--spec",  help="workload specification file", default=None)
-    parser.add_argument("--bucket",  help="bucket", default="default")
-    parser.add_argument("--password", help="password", default="")
-    parser.add_argument("--ops",     help="ops per sec", default=0, type=int)
-    parser.add_argument("--create",  help="percentage of creates 0-100", default=0, type=int)
-    parser.add_argument("--update",  help="percentage of updates 0-100", default=0, type=int)
-    parser.add_argument("--get",     help="percentage of gets 0-100", default=0, type=int)
-    parser.add_argument("--miss",    help="percentage of misses 0-100", default=0, type=int)
-    parser.add_argument("--expire",  help="percentage of expirations 0-100", default=0, type=int)
-    parser.add_argument("--ttl",      default=15, help="document expires time to use when expirations set")
-    parser.add_argument("--delete",  help="percentage of deletes 0-100", default=0, type=int)
-    parser.add_argument("--template",help="predefined template to use", default="default")
-    parser.add_argument("--hosts",  default=["127.0.0.1"],  nargs='+', help="couchbase hosts for use with standalone")
-    parser.add_argument("--padding",  default="", help="you can put a custom string here when using standalone loader")
-    parser.add_argument("--name",    help="predefind workload", default="default")
-    parser.add_argument("--sizes",  default=[128, 256], nargs="+", type=int, help="kv doc size(json)")
-
-    args = parser.parse_args()
-    args = vars(args)
-
+def run_kv(args):
     spec_file = args.get('spec')
     if spec_file:
         stream = open(spec_file, "r")
@@ -116,4 +95,51 @@ if __name__ == "__main__":
             args[opt] = spec[opt]
 
     run_workload(args)
+
+
+def init_kv_parser():
+
+    kv_parser = subparsers.add_parser('kv')
+    kv_parser.add_argument("--spec",  help="workload specification file", default=None)
+    kv_parser.add_argument("--bucket",  help="bucket", default="default")
+    kv_parser.add_argument("--password", help="password", default="")
+    kv_parser.add_argument("--ops",     help="ops per sec", default=0, type=int)
+    kv_parser.add_argument("--create",  help="percentage of creates 0-100", default=0, type=int)
+    kv_parser.add_argument("--update",  help="percentage of updates 0-100", default=0, type=int)
+    kv_parser.add_argument("--get",     help="percentage of gets 0-100", default=0, type=int)
+    kv_parser.add_argument("--miss",    help="percentage of misses 0-100", default=0, type=int)
+    kv_parser.add_argument("--expire",  help="percentage of expirations 0-100", default=0, type=int)
+    kv_parser.add_argument("--ttl",      default=15, help="document expires time to use when expirations set")
+    kv_parser.add_argument("--delete",  help="percentage of deletes 0-100", default=0, type=int)
+    kv_parser.add_argument("--template",help="predefined template to use", default="default")
+    kv_parser.add_argument("--hosts",  default=["127.0.0.1"],  nargs='+', help="couchbase hosts for use with standalone")
+    kv_parser.add_argument("--padding",  default="", help="you can put a custom string here when using standalone loader")
+    kv_parser.add_argument("--name",    help="predefind workload", default="default")
+    kv_parser.add_argument("--sizes",  default=[128, 256], nargs="+", type=int, help="kv doc size(json)")
+    kv_parser.set_defaults(handler=run_kv)
+
+
+def run_query(args):
+    print args
+
+def init_query_parser():
+
+    query_parser = subparsers.add_parser('query')
+    query_parser.add_argument("--ddoc",  help="design doc name", default=None)
+    query_parser.add_argument("--view",  help="name of view", default="default")
+    query_parser.add_argument("--qps", help="queries per second", default=100, type=int)
+    query_parser.set_defaults(handler=run_query)
+
+
+if __name__ == "__main__":
+
+    # setup cli parsers
+    init_kv_parser()
+    init_query_parser()
+
+    # parse args
+    args = parser.parse_args()
+    dict_args = vars(args)
+    args.handler(dict_args)
+
 
