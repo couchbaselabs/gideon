@@ -124,11 +124,14 @@ def run_query(args):
     query_loader(args)
 
 def init_query_parser():
-
     query_parser = subparsers.add_parser('query')
-    query_parser.add_argument("--ddoc",  help="design doc name", default=None)
-    query_parser.add_argument("--view",  help="name of view", default="default")
-    query_parser.add_argument("--qps", help="queries per second", default=100, type=int)
+    query_parser.add_argument("--host",  help="host to send query requests", default="127.0.0.1")
+    query_parser.add_argument("--port",  help="couch query port", default="8092")
+    query_parser.add_argument("--bucket",  help="bucket with design doc", default="default")
+    query_parser.add_argument("--ddoc",  help="design doc name", default=None, required=True)
+    query_parser.add_argument("--view",  help="name of view", default="default", required=True)
+    query_parser.add_argument("--concurrency", help="concurrent", default=100, type=int)
+    query_parser.add_argument("--params", nargs="+", help="query params key1:value1 key2:value2 ...", default=None)
     query_parser.set_defaults(handler=run_query)
 
 
@@ -142,5 +145,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
     dict_args = vars(args)
     args.handler(dict_args)
-
-
