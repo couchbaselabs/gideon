@@ -550,7 +550,14 @@ def resolveTemplate(template):
             if type_ in conversionFuncMap.keys():
                 val = conversionFuncMap[type_](int(len_))
                 val = "{}{}{}".format(prefix, val, suffix)
-
+                if len(prefix)==0 and len(suffix)==0:
+                    # use raw types
+                    if type_ == "int":
+                        val = int(val)
+                    if type_ == "boo":
+                        val = bool(val)
+                    if type_ == "flo":
+                        val = float(val)
         return val
 
     def resolveList(li):
