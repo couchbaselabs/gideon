@@ -18,5 +18,5 @@ make install
 cd /root
 pip install git+git://github.com/couchbase/couchbase-python-client
 pip install pyyaml
-
+pip install eventlet
 popd
