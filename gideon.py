@@ -2,6 +2,7 @@ import argparse
 import copy
 import yaml
 from loader import start_client_processes
+from query import query_loader
 
 parser = argparse.ArgumentParser(description='Mighty Small CB Loader')
 subparsers = parser.add_subparsers(help="workload type")
@@ -120,7 +121,7 @@ def init_kv_parser():
 
 
 def run_query(args):
-    print args
+    query_loader(args)
 
 def init_query_parser():
 
