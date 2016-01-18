@@ -1,0 +1,128 @@
+# start workload clients
+- hosts: clients
+  vars:
+   ops_main: 5000
+   ops_small: 2000
+   create_perc: 30
+   get_perc: 60
+   delete_perc: 10
+   sizes: "756 1024"
+   bucket0: "default"
+   bucket1: "bucket1"
+   bucket2: "bucket2"
+   ddoc: "scale"
+   view1: "data_by_build"
+   view2: "jobs_by_build"
+   view3: "all_components"
+   view4: "all_platforms"
+   view1_concurrency: 25
+   view1_params: "reduce:false"
+   view2_concurrency: 5
+   view2_params: "stale:false"
+   view3_concurrency: 10
+   view3_params: "reduce:false"
+   view4_concurrency: 10
+   view4_params: "stale:update_after"
+   orchestrator:  "{{hostvars[groups['orchestrator'][0]]['internal']}}"
+   query_host1: "{{hostvars[groups['couchbaseservers'][1]]['internal']}}"
+   query_host2: "{{hostvars[groups['couchbaseservers'][2]]['internal']}}"
+  remote_user: root
+  tasks:
+    - name: checkout client repo
+      git: repo=https://github.com/couchbaselabs/gideon dest=gideon/
+    - name: start workload for bucket0
+      shell: "nohup python gideon.py kv --ops {{ops_main}} --create {{create_perc}} --get {{get_perc}} --delete {{delete_perc}} --hosts {{orchestrator}} --bucket {{bucket0}} --sizes {{sizes}} &"
+      args:
+          chdir: gideon/
+    - name: start workload for bucket1
+      shell: "nohup python gideon.py kv --ops {{ops_small}} --create {{create_perc}} --get {{get_perc}} --delete {{delete_perc}} --hosts {{orchestrator}} --bucket {{bucket1}}&"
+      args:
+          chdir: gideon/
+    - name: start workload for bucket2
+      shell: "nohup python gideon.py kv --ops {{ops_small}} --create {{create_perc}} --get {{get_perc}} --delete {{delete_perc}} --hosts {{orchestrator}} --bucket {{bucket2}}&"
+      args:
+          chdir: gideon/
+    - name: view query
+      shell: "nohup python gideon.py query --host {{query_host1}} --ddoc {{ddoc}} --view {{view1}} --concurrency {{view1_concurrency}} --params {{view1_params}} &"
+      args:
+          chdir: gideon/
+    - name: view query
+      shell: "nohup python gideon.py query --host {{query_host1}} --ddoc {{ddoc}} --view {{view2}} --concurrency {{view2_concurrency}} --params {{view2_params}} &"
+      args:
+          chdir: gideon/
+    - name: view query
+      shell: "nohup python gideon.py query --host {{query_host2}} --ddoc {{ddoc}} --view {{view3}} --concurrency {{view3_concurrency}} --params {{view3_params}} &"
+      args:
+          chdir: gideon/
+    - name: view query
+      shell: "nohup python gideon.py query --host {{query_host2}} --ddoc {{ddoc}} --view {{view4}} --concurrency {{view4_concurrency}} --params {{view4_params}} &"
+      args:
+          chdir: gideon/
+
+# do rebalances  @2x increments
+- hosts: kvm-s63704.sc.couchbase.com:kvm-s63804.sc.couchbase.com
+  vars:
+    rest_port: 8091
+    rest_user: "Administrator"
+    rest_pass: "password"
+    rest_port: 8091
+    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+    orchestrator:  "{{hostvars[groups['orchestrator'][0]]['internal']}}"
+  tasks:
+    - name: add 2 nodes
+      shell: "{{cli_bin}} server-add -c {{orchestrator}} --server-add={{hostvars[inventory_hostname]['internal']}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
+
+- hosts: orchestrator
+  vars:
+    rest_user: "Administrator"
+    rest_pass: "password"
+    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+  tasks:
+    - name: rebalance
+      shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
+    - name: wait for 10 minutes
+      wait_for: timeout=600
+
+- hosts: kvm-s63705.sc.couchbase.com:kvm-s63805.sc.couchbase.com
+  vars:
+    rest_port: 8091
+    rest_user: "Administrator"
+    rest_pass: "password"
+    rest_port: 8091
+    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+    orchestrator:  "{{hostvars[groups['orchestrator'][0]]['internal']}}"
+  tasks:
+    - name: add 2 nodes
+      shell: "{{cli_bin}} server-add -c {{groups['orchestrator'][0]}}:{{rest_port}} --server-add={{hostvars[inventory_hostname]['internal']}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
+- hosts: orchestrator
+  vars:
+    rest_user: "Administrator"
+    rest_pass: "password"
+    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+  tasks:
+    - name: rebalance
+      shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
+    - name: wait for 10 minutes
+      wait_for: timeout=600
+
+- hosts: kvm-s63706.sc.couchbase.com:kvm-s63806.sc.couchbase.com
+  vars:
+    rest_port: 8091
+    rest_user: "Administrator"
+    rest_pass: "password"
+    rest_port: 8091
+    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+    orchestrator:  "{{hostvars[groups['orchestrator'][0]]['internal']}}"
+  tasks:
+    - name: add 2 nodes
+      shell: "{{cli_bin}} server-add -c {{groups['orchestrator'][0]}}:{{rest_port}} --server-add={{hostvars[inventory_hostname]['internal']}}:{{rest_port}} --server-add-username={{rest_user}} --server-add-password={{rest_pass}} -u {{rest_user}} -p {{rest_pass}}"
+- hosts: orchestrator
+  vars:
+    rest_user: "Administrator"
+    rest_pass: "password"
+    cli_bin:  "/opt/couchbase/bin/couchbase-cli"
+  tasks:
+    - name: rebalance
+      shell: "{{cli_bin}} rebalance -c {{inventory_hostname}} -u {{rest_user}} -p {{rest_pass}}"
+    - name: wait for 10 minutes
+      wait_for: timeout=600
