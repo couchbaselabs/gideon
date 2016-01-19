@@ -8,7 +8,7 @@ Built on python's libcouchbase interface.  Achieves very high op rate via batchi
 ./build.sh
 
 #run
-python gideon.py --ops 50000  --create 30 --get 60 --delete 10
+python gideon.py kv --ops 50000  --create 30 --get 60 --delete 10
 ```
 
 Or run from a spec
