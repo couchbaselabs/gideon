@@ -21,10 +21,11 @@ RUN make install
 WORKDIR /root
 RUN pip install git+git://github.com/couchbase/couchbase-python-client
 RUN pip install pyyaml
+RUN pip install eventlet
 
 # src
 RUN git clone https://github.com/couchbaselabs/gideon.git
 WORKDIR gideon
 
 COPY spec.yaml spec.yaml
-CMD python gideon.py --spec spec.yaml
+CMD python gideon.py kv --spec spec.yaml
