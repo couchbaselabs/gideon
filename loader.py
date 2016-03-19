@@ -62,6 +62,9 @@ class SDKClient(threading.Thread):
         self.ccq = None
         self.hotkey_batches = []
 
+        if self.ttl:
+            self.ttl = int(self.ttl)
+
         if self.batch_size > self.create_count:
             self.batch_size = self.create_count
 
