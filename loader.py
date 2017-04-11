@@ -10,9 +10,10 @@ import argparse
 
 # couchbase
 from couchbase.experimental import enable as enable_experimental
-from couchbase.exceptions import NotFoundError, TemporaryFailError, TimeoutError, NetworkError
+from couchbase.exceptions import NotFoundError, TemporaryFailError, TimeoutError, NetworkError, AuthError
 enable_experimental()
 from gcouchbase.bucket import Bucket
+from couchbase.cluster import Cluster, ClassicAuthenticator, PasswordAuthenticator
 
 # para
 from gevent import Greenlet, queue
@@ -45,6 +46,7 @@ class SDKClient(threading.Thread):
         self.ops_sec = task['ops_sec']
         self.bucket = task['bucket']
         self.password  = task['password']
+        self.user_password  = task['user_password']
         self.template = task['template']
         self.default_tsizes = task['sizes']
         self.create_count = task['create_count']/self.op_factor
@@ -84,7 +86,17 @@ class SDKClient(threading.Thread):
         try:
             endpoint = "%s:%s/%s" % (host, port, self.bucket)
             self.cb = Bucket(endpoint, password = self.password)
+
+        except AuthError:
+            # try rbac style auth
+            endpoint = 'couchbase://{0}:{1}?select_bucket=true'.format(host, port)
+            cluster = Cluster(endpoint)
+            auther = PasswordAuthenticator(self.bucket, self.user_password)
+            cluster.authenticate(auther)
+            self.cb = cluster.open_bucket(self.bucket)
+
         except Exception as ex:
+           
             logging.error("[Thread %s] cannot reach %s" %
                           (self.name, endpoint))
             logging.error(ex)

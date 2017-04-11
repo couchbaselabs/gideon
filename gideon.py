@@ -15,6 +15,7 @@ def argsToTask(args):
 
     bucket = args.get('bucket')
     password = args.get('password')
+    user_password = args.get('user_password')
     active_hosts = args.get('hosts')
     ops_sec = args.get('ops')
     sizes = args.get('sizes')
@@ -34,6 +35,7 @@ def argsToTask(args):
     msg = {'bucket' : bucket,
            'id' : bucket,
            'password' : password,
+           'user_password' : user_password,
            'ops_sec' : ops_sec,
            'create_count' : create_count,
            'update_count' : update_count,
@@ -104,6 +106,7 @@ def init_kv_parser():
     kv_parser.add_argument("--spec",  help="workload specification file", default=None)
     kv_parser.add_argument("--bucket",  help="bucket", default="default")
     kv_parser.add_argument("--password", help="password", default="")
+    kv_parser.add_argument("--user_password", help="rbac user password", default="password")
     kv_parser.add_argument("--ops",     help="ops per sec", default=0, type=int)
     kv_parser.add_argument("--create",  help="percentage of creates 0-100", default=0, type=int)
     kv_parser.add_argument("--update",  help="percentage of updates 0-100", default=0, type=int)
