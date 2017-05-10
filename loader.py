@@ -558,7 +558,7 @@ def resolveTemplate(template):
     }
 
     def convToType(val):
-        mObj = re.search(r"(.*)(\$)([A-Za-z]+)(\d+)?(.*)", val)
+        mObj = re.search(r"(.*?)(\$)([A-Za-z]+)(\d+)?(.*)", val)
         if mObj:
             prefix, magic, type_, len_, suffix = mObj.groups()
             len_ = len_ or 5
@@ -573,6 +573,11 @@ def resolveTemplate(template):
                         val = bool(val)
                     if type_ == "flo":
                         val = float(val)
+
+        if type(val) == str and '$' in val:
+           # convert remaining strings
+           return convToType(val)
+
         return val
 
     def resolveList(li):

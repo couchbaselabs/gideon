@@ -55,6 +55,7 @@ def argsToTask(args):
     msg_copy['template'] = {}
     msg_copy['template']['cc_queues'] = None
     msg_copy['template']['kv'] = {
+        'type': 'gideon',
         'bucket': bucket,
         'active_hosts' : active_hosts,
         'ops_sec' : ops_sec,
@@ -67,7 +68,8 @@ def argsToTask(args):
              'name':  "$str10",
              'likes': "$int",
              'online': "$boo",
-             'friends': ["$str","$str","$str","$str","$str"]
+             'friends': ["$str","$str","$str","$str","$str"],
+             'status': "$str5 $str5 $str1 $str1 $str20"
          },
         "build_id": "$int4",
         "claim": "$str40",
@@ -80,7 +82,8 @@ def argsToTask(args):
         "duration": "$int4",
         "priority": "$str1",
         "os": "$str1",
-        "build": "gideon-$int1"
+        "build": "gideon-$int1",
+        "description": "$str10 $str5 $str15 $str1 $str20"
     }
 
     return msg_copy
