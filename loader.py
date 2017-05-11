@@ -88,6 +88,10 @@ class SDKClient(threading.Thread):
             self.cb = Bucket(endpoint, password = self.password)
 
         except AuthError:
+            # direct port for cluster_run
+            port_mod = int(port) % 9000
+            if port_mod != 8091:
+                port = str(12000+port_mod)
             # try rbac style auth
             endpoint = 'couchbase://{0}:{1}?select_bucket=true'.format(host, port)
             cluster = Cluster(endpoint)
