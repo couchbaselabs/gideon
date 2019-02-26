@@ -1,10 +1,10 @@
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 
 WORKDIR /root
 
 # sys deps
 RUN apt-get update
-RUN apt-get -y install gcc g++ make cmake git-core git-core
+RUN apt-get -y install gcc g++ make cmake git-core git-core wget lsb-release
 RUN apt-get -y install python-dev python-pip
 RUN apt-get -y install libevent-dev libev-dev
 
@@ -12,12 +12,11 @@ RUN apt-get -y install libevent-dev libev-dev
 RUN pip install gevent
 
 # sdk
-RUN git clone git://github.com/couchbase/libcouchbase.git
-RUN mkdir libcouchbase/build
-WORKDIR libcouchbase/build
-RUN ../cmake/configure --prefix=/usr
-RUN make
-RUN make install
+RUN wget http://packages.couchbase.com/releases/couchbase-release/couchbase-release-1.0-4-amd64.deb
+RUN dpkg -i couchbase-release-1.0-4-amd64.deb
+RUN apt-get update
+RUN apt-get -y install libcouchbase-dev libcouchbase2-bin build-essential
+
 WORKDIR /root
 RUN pip install git+git://github.com/couchbase/couchbase-python-client
 RUN pip install pyyaml
