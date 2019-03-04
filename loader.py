@@ -55,6 +55,8 @@ class SDKClient(threading.Thread):
         self.del_count = task['del_count']/self.op_factor
         self.exp_count = task['exp_count']/self.op_factor
         self.ttl = task['ttl']
+        self.persist_to = task['persist_to']
+        self.replicate_to = task['replicate_to']
         self.miss_perc = task['miss_perc']
         self.active_hosts = task['active_hosts']
         self.batch_size = 5000
@@ -162,13 +164,16 @@ class SDKClient(threading.Thread):
             if docs_to_expire > 0:
 
                 # create an expire batch
-                self.mset(self.template, docs_to_expire, ttl = self.ttl)
+                self.mset(self.template, docs_to_expire, ttl = self.ttl,
+                          persist_to=self.persist_to, replicate_to=self.replicate_to)
                 count = count - docs_to_expire
 
-            self.mset(self.template, count)
+            self.mset(self.template, count,
+                      persist_to=self.persist_to, replicate_to=self.replicate_to)
 
         if self.update_count > 0:
-            self.mset_update(self.template, self.update_count)
+            self.mset_update(self.template, self.update_count,
+                             persist_to=self.persist_to, replicate_to=self.replicate_to)
 
         if self.get_count > 0:
             self.mget(self.get_count)
@@ -177,7 +182,7 @@ class SDKClient(threading.Thread):
             self.mdelete(self.del_count)
 
 
-    def mset(self, template, count, ttl = 0):
+    def mset(self, template, count, ttl = 0, persist_to = 0, replicate_to = 0):
         msg = {}
         keys = []
         cursor = 0
@@ -191,22 +196,22 @@ class SDKClient(threading.Thread):
 
             if ((j+1) % self.batch_size) == 0:
                 batch = keys[cursor:j+1]
-                self._mset(msg, ttl)
+                self._mset(msg, ttl, persist_to=persist_to, replicate_to=replicate_to)
                 self.memq.put_nowait({'start' : batch[0],
                                       'end'  : batch[-1]})
                 msg = {}
                 cursor = j
             elif j == (count -1):
                 batch = keys[cursor:]
-                self._mset(msg, ttl)
+                self._mset(msg, ttl, persist_to=persist_to, replicate_to=replicate_to)
                 self.memq.put_nowait({'start' : batch[0],
                                       'end'  : batch[-1]})
 
 
-    def _mset(self, msg, ttl = 0):
+    def _mset(self, msg, ttl = 0, persist_to = 0, replicate_to = 0):
 
         try:
-            self.cb.set_multi(msg, ttl=ttl)
+            self.cb.set_multi(msg, ttl=ttl, persist_to=persist_to, replicate_to=replicate_to)
         except TemporaryFailError:
             logging.warn("temp failure during mset - cluster may be unstable")
         except TimeoutError:
@@ -218,7 +223,7 @@ class SDKClient(threading.Thread):
             logging.error(ex)
             self.isterminal = True
 
-    def mset_update(self, template, count):
+    def mset_update(self, template, count, persist_to = 0, replicate_to = 0):
 
         msg = {}
         batches = self.getKeys(count)
@@ -229,7 +234,7 @@ class SDKClient(threading.Thread):
                 try:
                     for key in batch:
                         msg[key] = template
-                    self.cb.set_multi(msg)
+                    self.cb.set_multi(msg, persist_to=persist_to, replicate_to=replicate_to)
                 except NotFoundError as nf:
                     logging.error("update key not found!  %s: " % nf.key)
                 except TimeoutError:
