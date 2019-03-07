@@ -19,6 +19,8 @@ def argsToTask(args):
     active_hosts = args.get('hosts')
     ops_sec = args.get('ops')
     sizes = args.get('sizes')
+    persist_to = args.get('persist_to')
+    replicate_to = args.get('replicate_to')
     num_consumers = 1
 
     ops_sec = int(ops_sec)/num_consumers
@@ -48,7 +50,9 @@ def argsToTask(args):
            'miss_perc' : miss_perc,
            'active' : True,
            'active_hosts' : active_hosts,
-           'sizes': sizes}
+           'sizes': sizes,
+           'persist_to': persist_to,
+           'replicate_to': replicate_to}
 
     # set doc-template to this message
     msg_copy = copy.deepcopy(msg)
@@ -123,6 +127,8 @@ def init_kv_parser():
     kv_parser.add_argument("--padding",  default="", help="you can put a custom string here when using standalone loader")
     kv_parser.add_argument("--name",    help="predefind workload", default="default")
     kv_parser.add_argument("--sizes",  default=[128, 256], nargs="+", type=int, help="kv doc size(json)")
+    kv_parser.add_argument("--persist_to", default=0, type=int, help="persist_to argument for create and update")
+    kv_parser.add_argument("--replicate_to", default=0, type=int, help="replicate_to argument for create and update")
     kv_parser.set_defaults(handler=run_kv)
 
 
