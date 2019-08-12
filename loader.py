@@ -7,29 +7,33 @@ import gevent
 import random
 import argparse
 
-
 # couchbase
-from couchbase.experimental import enable as enable_experimental
+# from couchbase.experimental import enable as enable_experimental
 from couchbase.exceptions import NotFoundError, TemporaryFailError, TimeoutError, NetworkError, AuthError
-enable_experimental()
+# enable_experimental()
 from gcouchbase.bucket import Bucket
-from couchbase.cluster import Cluster, ClassicAuthenticator, PasswordAuthenticator
+from couchbase.cluster import Cluster
+from couchbase_core.cluster import PasswordAuthenticator
+from couchbase.durability import Durability
+from couchbase.cluster import ClusterOptions
 
 # para
 from gevent import Greenlet, queue
 import threading
 import multiprocessing
-from multiprocessing import Process, Event,  queues
+from multiprocessing import Process, Event, queues
 
 from gevent import monkey
+
 monkey.patch_all()
 
-#logging
+# logging
 import logging
-logging.basicConfig(filename='consumer.log',level=logging.DEBUG)
+
+logging.basicConfig(filename='consumer.log', level=logging.DEBUG)
 
 # some global state
-CB_CLUSTER_TAG = "default" 
+CB_CLUSTER_TAG = "default"
 CLIENTSPERPROCESS = 4
 PROCSPERTASK = 4
 MAXPROCESSES = 16
@@ -45,15 +49,15 @@ class SDKClient(threading.Thread):
         self.op_factor = CLIENTSPERPROCESS * PROCSPERTASK
         self.ops_sec = task['ops_sec']
         self.bucket = task['bucket']
-        self.password  = task['password']
-        self.user_password  = task['user_password']
+        self.password = task['password']
+        self.user_password = task['user_password']
         self.template = task['template']
         self.default_tsizes = task['sizes']
-        self.create_count = task['create_count']/self.op_factor
-        self.update_count = task['update_count']/self.op_factor
-        self.get_count = task['get_count']/self.op_factor
-        self.del_count = task['del_count']/self.op_factor
-        self.exp_count = task['exp_count']/self.op_factor
+        self.create_count = task['create_count'] / self.op_factor
+        self.update_count = task['update_count'] / self.op_factor
+        self.get_count = task['get_count'] / self.op_factor
+        self.del_count = task['del_count'] / self.op_factor
+        self.exp_count = task['exp_count'] / self.op_factor
         self.ttl = task['ttl']
         self.persist_to = task['persist_to']
         self.replicate_to = task['replicate_to']
@@ -74,7 +78,7 @@ class SDKClient(threading.Thread):
 
         self.active_hosts = task['active_hosts']
 
-        addr = task['active_hosts'][random.randint(0,len(self.active_hosts) - 1)].split(':')
+        addr = task['active_hosts'][random.randint(0, len(self.active_hosts) - 1)].split(':')
         host = addr[0]
         port = 8091
         if len(addr) > 1:
@@ -86,25 +90,25 @@ class SDKClient(threading.Thread):
         self.done = False
 
         try:
-            endpoint = "%s:%s/%s" % (host, port, self.bucket)
-            self.cb = Bucket(endpoint, password = self.password)
+            auther = PasswordAuthenticator(self.bucket, self.user_password)
+            endpoint = 'couchbase://{0}'.format(host)
+            cluster = Cluster(endpoint, ClusterOptions(auther))
+            self.cb = cluster.bucket(self.bucket).default_collection()
 
         except AuthError:
             # direct port for cluster_run
             port_mod = int(port) % 9000
             if port_mod != 8091:
-                port = str(12000+port_mod)
+                port = str(12000 + port_mod)
             # try rbac style auth
-            endpoint = 'couchbase://{0}:{1}?select_bucket=true'.format(host, port)
-            cluster = Cluster(endpoint)
             auther = PasswordAuthenticator(self.bucket, self.user_password)
-            cluster.authenticate(auther)
-            self.cb = cluster.open_bucket(self.bucket)
+            endpoint = 'couchbase://{0}'.format(host)
+            cluster = Cluster(endpoint, ClusterOptions(auther))
+            self.cb = cluster.bucket(self.bucket).default_collection()
 
         except Exception as ex:
-           
-            logging.error("[Thread %s] cannot reach %s" %
-                          (self.name, endpoint))
+
+            logging.error("[Thread %s] cannot reach %s" % (self.name, endpoint))
             logging.error(ex)
             self.isterminal = True
 
@@ -119,7 +123,6 @@ class SDKClient(threading.Thread):
 
             start = datetime.datetime.now()
 
-
             # do an op cycle
             self.do_cycle()
 
@@ -130,30 +133,29 @@ class SDKClient(threading.Thread):
 
             # wait till next cycle
             end = datetime.datetime.now()
-            wait = 1 - (end - start).microseconds/float(1000000)
+            wait = 1 - (end - start).microseconds / float(1000000)
             if (wait > 0):
                 time.sleep(wait)
             else:
-                pass #probably  we are overcomitted, but it's ok
+                pass  # probably  we are overcomitted, but it's ok
 
             ops_total = ops_total + self.ops_sec
             cycle = cycle + 1
 
-            if (cycle % 120) == 0: # 2 mins
+            if (cycle % 120) == 0:  # 2 mins
                 logging.info("[Thread %s] total ops: %s" % (self.name, ops_total))
                 self.flushq()
 
         self.flushq()
         logging.info("[Thread %s] done!" % (self.name))
 
-
-    def flushq(self, flush_hotkeys = False):
-        return # todo for dirty keys
+    def flushq(self, flush_hotkeys=False):
+        return  # todo for dirty keys
 
     def do_cycle(self):
 
         sizes = self.template.get('size') or self.default_tsizes
-        t_size = sizes[random.randint(0,len(sizes)-1)]
+        t_size = sizes[random.randint(0, len(sizes) - 1)]
         self.template['t_size'] = t_size
 
         if self.create_count > 0:
@@ -162,18 +164,17 @@ class SDKClient(threading.Thread):
             docs_to_expire = self.exp_count
             # check if we need to expire some docs
             if docs_to_expire > 0:
-
                 # create an expire batch
-                self.mset(self.template, docs_to_expire, ttl = self.ttl,
-                          persist_to=self.persist_to, replicate_to=self.replicate_to)
+                self.mset(self.template, docs_to_expire, ttl=self.ttl, persist_to=self.persist_to,
+                          replicate_to=self.replicate_to)
                 count = count - docs_to_expire
+                count = int(count)
 
-            self.mset(self.template, count,
-                      persist_to=self.persist_to, replicate_to=self.replicate_to)
+            self.mset(self.template, count, persist_to=self.persist_to, replicate_to=self.replicate_to)
 
         if self.update_count > 0:
-            self.mset_update(self.template, self.update_count,
-                             persist_to=self.persist_to, replicate_to=self.replicate_to)
+            self.mset_update(self.template, self.update_count, persist_to=self.persist_to,
+                             replicate_to=self.replicate_to)
 
         if self.get_count > 0:
             self.mget(self.get_count)
@@ -181,34 +182,30 @@ class SDKClient(threading.Thread):
         if self.del_count > 0:
             self.mdelete(self.del_count)
 
-
-    def mset(self, template, count, ttl = 0, persist_to = 0, replicate_to = 0):
+    def mset(self, template, count, ttl=0, persist_to=0, replicate_to=0):
         msg = {}
         keys = []
         cursor = 0
         j = 0
 
         template = resolveTemplate(template)
-        for j in xrange(count):
-            self.i = self.i+1
-            msg[self.name+str(self.i)] = template
-            keys.append(self.name+str(self.i))
+        for j in range(int(count)):
+            self.i = self.i + 1
+            msg[self.name + str(self.i)] = template
+            keys.append(self.name + str(self.i))
 
-            if ((j+1) % self.batch_size) == 0:
-                batch = keys[cursor:j+1]
+            if ((j + 1) % self.batch_size) == 0:
+                batch = keys[cursor:j + 1]
                 self._mset(msg, ttl, persist_to=persist_to, replicate_to=replicate_to)
-                self.memq.put_nowait({'start' : batch[0],
-                                      'end'  : batch[-1]})
+                self.memq.put_nowait({'start': batch[0], 'end': batch[-1]})
                 msg = {}
                 cursor = j
-            elif j == (count -1):
+            elif j == (count - 1):
                 batch = keys[cursor:]
                 self._mset(msg, ttl, persist_to=persist_to, replicate_to=replicate_to)
-                self.memq.put_nowait({'start' : batch[0],
-                                      'end'  : batch[-1]})
+                self.memq.put_nowait({'start': batch[0], 'end': batch[-1]})
 
-
-    def _mset(self, msg, ttl = 0, persist_to = 0, replicate_to = 0):
+    def _mset(self, msg, ttl=0, persist_to=0, replicate_to=0):
 
         try:
             self.cb.set_multi(msg, ttl=ttl, persist_to=persist_to, replicate_to=replicate_to)
@@ -223,7 +220,7 @@ class SDKClient(threading.Thread):
             logging.error(ex)
             self.isterminal = True
 
-    def mset_update(self, template, count, persist_to = 0, replicate_to = 0):
+    def mset_update(self, template, count, persist_to=0, replicate_to=0):
 
         msg = {}
         batches = self.getKeys(count)
@@ -247,7 +244,6 @@ class SDKClient(threading.Thread):
                 except Exception as ex:
                     logging.error(ex)
                     self.isterminal = True
-
 
     def mget(self, count):
 
@@ -274,9 +270,8 @@ class SDKClient(threading.Thread):
                     logging.error(ex)
                     self.isterminal = True
 
-
     def mdelete(self, count):
-        batches = self.getKeys(count, requeue = False)
+        batches = self.getKeys(count, requeue=False)
         keys_deleted = 0
 
         # delete from buffer
@@ -305,7 +300,6 @@ class SDKClient(threading.Thread):
 
         return keys_deleted
 
-
     def getCacheMissKeys(self, count):
 
         # returns batches of keys where first batch contains # of keys to miss
@@ -313,20 +307,19 @@ class SDKClient(threading.Thread):
         batches = []
         miss_keys = []
 
-        num_to_miss = int( ((self.miss_perc/float(100)) * count))
-        miss_batches = self.getKeys(num_to_miss, force_stale = True)
+        num_to_miss = int(((self.miss_perc / float(100)) * count))
+        miss_batches = self.getKeys(num_to_miss, force_stale=True)
 
         if len(self.hotkey_batches) == 0:
             # hotkeys are taken off queue and cannot be reused
             # until workload is flushed
             need = count - num_to_miss
-            self.hotkey_batches = self.getKeys(need, requeue = False)
-
+            self.hotkey_batches = self.getKeys(need, requeue=False)
 
         batches = miss_batches + self.hotkey_batches
         return batches
 
-    def getKeys(self, count, requeue = True, force_stale = False):
+    def getKeys(self, count, requeue=True, force_stale=False):
 
         keys_retrieved = 0
         batches = []
@@ -334,14 +327,14 @@ class SDKClient(threading.Thread):
         while keys_retrieved < count:
 
             # get keys
-            keys = self.getKeysFromQueue(requeue, force_stale = force_stale)
+            keys = self.getKeysFromQueue(requeue, force_stale=force_stale)
 
             if len(keys) == 0:
                 break
 
             # in case we got too many keys slice the batch
             need = count - keys_retrieved
-            if(len(keys) > need):
+            if (len(keys) > need):
                 keys = keys[:need]
 
             keys_retrieved = keys_retrieved + len(keys)
@@ -349,10 +342,9 @@ class SDKClient(threading.Thread):
             # add to batch
             batches.append(keys)
 
-
         return batches
 
-    def getKeysFromQueue(self, requeue = True, force_stale = False):
+    def getKeysFromQueue(self, requeue=True, force_stale=False):
 
         # get key mapping and convert to keys
         keys = []
@@ -369,7 +361,6 @@ class SDKClient(threading.Thread):
         if key_map:
             keys = self.keyMapToKeys(key_map)
 
-
         return keys
 
     def keyMapToKeys(self, key_map):
@@ -380,10 +371,9 @@ class SDKClient(threading.Thread):
         prefix, end_idx = key_map['end'].split('_')
 
         for i in range(int(start_idx), int(end_idx) + 1):
-            keys.append(prefix+"_"+str(i))
+            keys.append(prefix + "_" + str(i))
 
         return keys
-
 
     def fillq(self):
 
@@ -396,10 +386,10 @@ class SDKClient(threading.Thread):
             if key_map:
                 self.memq.put_nowait(key_map)
 
-        logging.info("[Thread %s] filled %s items from  %s" %
-                     (self.name, self.memq.qsize(), self.consume_queue or self.ccq))
+        logging.info(
+            "[Thread %s] filled %s items from  %s" % (self.name, self.memq.qsize(), self.consume_queue or self.ccq))
 
-    def getKeyMapFromLocalQueue(self, requeue = True):
+    def getKeyMapFromLocalQueue(self, requeue=True):
 
         key_map = None
 
@@ -408,13 +398,13 @@ class SDKClient(threading.Thread):
             if requeue:
                 self.memq.put_nowait(key_map)
         except queue.Empty:
-            #no more items
+            # no more items
             self.fillq()
 
         return key_map
 
-    def getKeyMapFromRemoteQueue(self, requeue = True):
-        return None 
+    def getKeyMapFromRemoteQueue(self, requeue=True):
+        return None
 
 
 class SDKProcess(Process):
@@ -427,9 +417,9 @@ class SDKProcess(Process):
         self.id = id
         self.clients = []
         p_id = self.id
-        self.client_events = [Event() for e in xrange(CLIENTSPERPROCESS)]
-        for i in xrange(CLIENTSPERPROCESS):
-            name = _random_string(4)+"-"+str(p_id)+str(i)+"_"
+        self.client_events = [Event() for e in range(CLIENTSPERPROCESS)]
+        for i in range(CLIENTSPERPROCESS):
+            name = str(_random_string(4)) + "-" + str(p_id) + str(i) + "_"
 
             # start client
             client = SDKClient(name, self.task, self.client_events[i])
@@ -437,14 +427,12 @@ class SDKProcess(Process):
 
             p_id = p_id + 1
 
-
-
     def run(self):
 
         logging.info("[Process %s] started workload: %s" % (self.id, self.task['id']))
 
         # start process clients
-        for client  in self.clients:
+        for client in self.clients:
             client.start()
 
         # monitor running threads and restart if any die
@@ -473,7 +461,6 @@ class SDKProcess(Process):
 
             time.sleep(5)
 
-
     def terminate(self):
         for e in self.client_events:
             e.clear()
@@ -483,16 +470,19 @@ class SDKProcess(Process):
 
 
 def _random_string(length):
+    length = int(length)
     return (("%%0%dX" % (length * 2)) % random.getrandbits(length * 8)).encode("ascii")
 
+
 def _random_int(length):
-    return random.randint(10**(length-1), (10**length) -1)
+    return random.randint(10 ** (length - 1), (10 ** length) - 1)
+
 
 def _random_float(length):
-    return _random_int(length)/(10.0**(length/2))
+    return _random_int(length) / (10.0 ** (length / 2))
 
-def kill_nprocs(id_, kill_num = None):
 
+def kill_nprocs(id_, kill_num=None):
     if id_ in PROCSSES:
         procs = PROCSSES[id_]
         del PROCSSES[id_]
@@ -504,17 +494,14 @@ def kill_nprocs(id_, kill_num = None):
             procs[i].terminate()
 
 
-def start_client_processes(task, standalone = False):
-
+def start_client_processes(task, standalone=False):
     task['standalone'] = standalone
     workload_id = task['id']
     PROCSSES[workload_id] = []
 
-
     for i in range(PROCSPERTASK):
-
         # set process id and provide queue
-        p_id = (i)*CLIENTSPERPROCESS
+        p_id = (i) * CLIENTSPERPROCESS
         p = SDKProcess(p_id, task)
 
         # start
@@ -535,11 +522,11 @@ def init(message):
         task = json.loads(str(body))
 
     except Exception:
-        print "Unable to parse workload task"
-        print body
+        print("Unable to parse workload task")
+        print(body)
         return
 
-    if  task['active'] == False:
+    if task['active'] == False:
 
         # stop processes running a workload
         workload_id = task['id']
@@ -551,20 +538,13 @@ def init(message):
             start_client_processes(task)
 
         except Exception as ex:
-            print "Unable to start workload processes"
-            print ex
-
-
+            print("Unable to start workload processes")
+            print(ex)
 
 
 def resolveTemplate(template):
-
-    conversionFuncMap = {
-        'str' : lambda n : _random_string(n),
-        'int' : lambda n : _random_int(n),
-        'flo' : lambda n : _random_float(n),
-        'boo' : lambda n : (True, False)[random.randint(0,1)],
-    }
+    conversionFuncMap = {'str': lambda n: _random_string(n), 'int': lambda n: _random_int(n),
+        'flo': lambda n: _random_float(n), 'boo': lambda n: (True, False)[random.randint(0, 1)], }
 
     def convToType(val):
         mObj = re.search(r"(.*?)(\$)([A-Za-z]+)(\d+)?(.*)", val)
@@ -574,7 +554,7 @@ def resolveTemplate(template):
             if type_ in conversionFuncMap.keys():
                 val = conversionFuncMap[type_](int(len_))
                 val = "{}{}{}".format(prefix, val, suffix)
-                if len(prefix)==0 and len(suffix)==0:
+                if len(prefix) == 0 and len(suffix) == 0:
                     # use raw types
                     if type_ == "int":
                         val = int(val)
@@ -584,8 +564,8 @@ def resolveTemplate(template):
                         val = float(val)
 
         if type(val) == str and '$' in val:
-           # convert remaining strings
-           return convToType(val)
+            # convert remaining strings
+            return convToType(val)
 
         return val
 
@@ -600,9 +580,10 @@ def resolveTemplate(template):
             rc.append(val)
 
         return rc
+
     def resolveDict(di):
         rc = {}
-        for k,v in di.iteritems():
+        for k, v in di.items():
             val = v
             if type(v) == dict:
                 val = resolveDict(v)
@@ -615,9 +596,9 @@ def resolveTemplate(template):
 
     t_size = template['t_size']
     kv_template = resolveDict(template['kv'])
-    kv_size = sys.getsizeof(kv_template)/8
-    if  kv_size < t_size:
+    kv_size = sys.getsizeof(kv_template) / 8
+    if kv_size < t_size:
         padding = _random_string(t_size - kv_size)
-        kv_template.update({"padding" : padding})
+        kv_template.update({"padding": padding})
 
     return kv_template
