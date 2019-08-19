@@ -21,6 +21,7 @@ def argsToTask(args):
     sizes = args.get('sizes')
     persist_to = args.get('persist_to')
     replicate_to = args.get('replicate_to')
+    durability = args.get('durability')
     num_consumers = 1
 
     ops_sec = int(ops_sec)/num_consumers
@@ -52,7 +53,8 @@ def argsToTask(args):
            'active_hosts' : active_hosts,
            'sizes': sizes,
            'persist_to': persist_to,
-           'replicate_to': replicate_to}
+           'replicate_to': replicate_to,
+            'durability': durability}
 
     # set doc-template to this message
     msg_copy = copy.deepcopy(msg)
@@ -64,6 +66,7 @@ def argsToTask(args):
         'active_hosts' : active_hosts,
         'ops_sec' : ops_sec,
         'sizes': sizes,
+        'durability':durability,
         'rating': "$flo",
         'city':  "$str",
         'state': "$str1",
@@ -129,6 +132,7 @@ def init_kv_parser():
     kv_parser.add_argument("--sizes",  default=[128, 256], nargs="+", type=int, help="kv doc size(json)")
     kv_parser.add_argument("--persist_to", default=0, type=int, help="persist_to argument for create and update")
     kv_parser.add_argument("--replicate_to", default=0, type=int, help="replicate_to argument for create and update")
+    kv_parser.add_argument("--durability", default=None,help="durability levels ['majority', 'majority_and_persist_on_master', 'persist_to_majority']")
     kv_parser.set_defaults(handler=run_kv)
 
 

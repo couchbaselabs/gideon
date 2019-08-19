@@ -53,14 +53,15 @@ class SDKClient(threading.Thread):
         self.user_password = task['user_password']
         self.template = task['template']
         self.default_tsizes = task['sizes']
-        self.create_count = task['create_count'] / self.op_factor
-        self.update_count = task['update_count'] / self.op_factor
-        self.get_count = task['get_count'] / self.op_factor
-        self.del_count = task['del_count'] / self.op_factor
-        self.exp_count = task['exp_count'] / self.op_factor
+        self.create_count = int(task['create_count'] / self.op_factor)
+        self.update_count = int(task['update_count'] / self.op_factor)
+        self.get_count = int(task['get_count'] / self.op_factor)
+        self.del_count = int(task['del_count'] / self.op_factor)
+        self.exp_count = int(task['exp_count'] / self.op_factor)
         self.ttl = task['ttl']
         self.persist_to = task['persist_to']
         self.replicate_to = task['replicate_to']
+        self.durability= task['durability']
         self.miss_perc = task['miss_perc']
         self.active_hosts = task['active_hosts']
         self.batch_size = 5000
@@ -69,6 +70,15 @@ class SDKClient(threading.Thread):
         self.standalone = task['standalone']
         self.ccq = None
         self.hotkey_batches = []
+
+        if self.durability== None:
+            self.durability_level=Durability.NONE
+        elif self.durability== 'majority':
+            self.durability_level=Durability.MAJORITY
+        elif self.durability == 'majority_and_persist_on_master':
+            self.durability_level=Durability.MAJORITY_AND_PERSIST_ON_MASTER
+        elif self.durability == 'persist_to_majority':
+            self.durability_level=Durability.PERSIST_TO_MAJORITY
 
         if self.ttl:
             self.ttl = int(self.ttl)
@@ -90,19 +100,12 @@ class SDKClient(threading.Thread):
         self.done = False
 
         try:
-            auther = PasswordAuthenticator(self.bucket, self.user_password)
-            endpoint = 'couchbase://{0}'.format(host)
-            cluster = Cluster(endpoint, ClusterOptions(auther))
-            self.cb = cluster.bucket(self.bucket).default_collection()
-
-        except AuthError:
             # direct port for cluster_run
             port_mod = int(port) % 9000
             if port_mod != 8091:
                 port = str(12000 + port_mod)
-            # try rbac style auth
             auther = PasswordAuthenticator(self.bucket, self.user_password)
-            endpoint = 'couchbase://{0}'.format(host)
+            endpoint = 'couchbase://{0}:{1}'.format(host,port)
             cluster = Cluster(endpoint, ClusterOptions(auther))
             self.cb = cluster.bucket(self.bucket).default_collection()
 
@@ -157,7 +160,6 @@ class SDKClient(threading.Thread):
         sizes = self.template.get('size') or self.default_tsizes
         t_size = sizes[random.randint(0, len(sizes) - 1)]
         self.template['t_size'] = t_size
-
         if self.create_count > 0:
 
             count = self.create_count
@@ -166,23 +168,22 @@ class SDKClient(threading.Thread):
             if docs_to_expire > 0:
                 # create an expire batch
                 self.mset(self.template, docs_to_expire, ttl=self.ttl, persist_to=self.persist_to,
-                          replicate_to=self.replicate_to)
+                          replicate_to=self.replicate_to,durability_level=self.durability_level)
                 count = count - docs_to_expire
                 count = int(count)
-
-            self.mset(self.template, count, persist_to=self.persist_to, replicate_to=self.replicate_to)
+            self.mset(self.template, count, persist_to=self.persist_to, replicate_to=self.replicate_to,durability_level=self.durability_level)
 
         if self.update_count > 0:
             self.mset_update(self.template, self.update_count, persist_to=self.persist_to,
-                             replicate_to=self.replicate_to)
+                             replicate_to=self.replicate_to,durability_level=self.durability_level)
 
         if self.get_count > 0:
             self.mget(self.get_count)
 
         if self.del_count > 0:
-            self.mdelete(self.del_count)
+            self.mdelete(self.del_count,durability_level=self.durability_level)
 
-    def mset(self, template, count, ttl=0, persist_to=0, replicate_to=0):
+    def mset(self, template, count, ttl=0, persist_to=0, replicate_to=0,durability_level=Durability.NONE):
         msg = {}
         keys = []
         cursor = 0
@@ -196,7 +197,7 @@ class SDKClient(threading.Thread):
 
             if ((j + 1) % self.batch_size) == 0:
                 batch = keys[cursor:j + 1]
-                self._mset(msg, ttl, persist_to=persist_to, replicate_to=replicate_to)
+                self._mset(msg, ttl, persist_to=persist_to, replicate_to=replicate_to,durability_level=durability_level)
                 self.memq.put_nowait({'start': batch[0], 'end': batch[-1]})
                 msg = {}
                 cursor = j
@@ -205,10 +206,10 @@ class SDKClient(threading.Thread):
                 self._mset(msg, ttl, persist_to=persist_to, replicate_to=replicate_to)
                 self.memq.put_nowait({'start': batch[0], 'end': batch[-1]})
 
-    def _mset(self, msg, ttl=0, persist_to=0, replicate_to=0):
+    def _mset(self, msg, ttl=0, persist_to=0, replicate_to=0,durability_level=Durability.NONE):
 
         try:
-            self.cb.set_multi(msg, ttl=ttl, persist_to=persist_to, replicate_to=replicate_to)
+            self.cb.upsert_multi(msg, ttl=ttl, persist_to=persist_to, replicate_to=replicate_to,durability_level=durability_level)
         except TemporaryFailError:
             logging.warn("temp failure during mset - cluster may be unstable")
         except TimeoutError:
@@ -220,7 +221,7 @@ class SDKClient(threading.Thread):
             logging.error(ex)
             self.isterminal = True
 
-    def mset_update(self, template, count, persist_to=0, replicate_to=0):
+    def mset_update(self, template, count, persist_to=0, replicate_to=0,durability_level=Durability.NONE):
 
         msg = {}
         batches = self.getKeys(count)
@@ -231,7 +232,7 @@ class SDKClient(threading.Thread):
                 try:
                     for key in batch:
                         msg[key] = template
-                    self.cb.set_multi(msg, persist_to=persist_to, replicate_to=replicate_to)
+                    self.cb.upsert_multi(msg, persist_to=persist_to, replicate_to=replicate_to,durability_level=durability_level)
                 except NotFoundError as nf:
                     logging.error("update key not found!  %s: " % nf.key)
                 except TimeoutError:
@@ -270,23 +271,23 @@ class SDKClient(threading.Thread):
                     logging.error(ex)
                     self.isterminal = True
 
-    def mdelete(self, count):
+    def mdelete(self, count,durability_level=Durability.NONE):
         batches = self.getKeys(count, requeue=False)
         keys_deleted = 0
 
         # delete from buffer
         if len(batches) > 0:
-            keys_deleted = self._mdelete(batches)
+            keys_deleted = self._mdelete(batches,durability_level)
         else:
             pass
 
-    def _mdelete(self, batches):
+    def _mdelete(self, batches,durability_level=Durability.NONE):
         keys_deleted = 0
         for batch in batches:
             try:
                 if len(batch) > 0:
                     keys_deleted = len(batch) + keys_deleted
-                    self.cb.delete_multi(batch)
+                    self.cb.remove_multi(batch,durability_level=durability_level)
             except NotFoundError as nf:
                 logging.warn("get key not found!  %s: " % nf.key)
             except TimeoutError:
@@ -471,7 +472,7 @@ class SDKProcess(Process):
 
 def _random_string(length):
     length = int(length)
-    return (("%%0%dX" % (length * 2)) % random.getrandbits(length * 8)).encode("ascii")
+    return (("%%0%dX" % (length * 2)) % random.getrandbits(length * 8))
 
 
 def _random_int(length):

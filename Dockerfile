@@ -1,30 +1,24 @@
+# docker build -t ubuntu1604py36
 FROM ubuntu:16.04
 
-WORKDIR /root
-
-# sys deps
+RUN apt-get update  --fix-missing
+RUN apt-get install -y software-properties-common vim wget git
+RUN add-apt-repository ppa:jonathonf/python-3.6
 RUN apt-get update
-RUN apt-get -y install gcc g++ make cmake git-core git-core wget lsb-release
-RUN apt-get -y install python-dev python-pip
-RUN apt-get -y install libevent-dev libev-dev
 
-# python deps
-RUN pip install gevent
+RUN apt-get install -y build-essential python3.6 python3.6-dev python3-pip python3.6-venv
+
+# update pip
+RUN python3.6 -m pip install pip --upgrade
+RUN python3.6 -m pip install wheel
 
 # sdk
-RUN wget http://packages.couchbase.com/releases/couchbase-release/couchbase-release-1.0-4-amd64.deb
-RUN dpkg -i couchbase-release-1.0-4-amd64.deb
-RUN apt-get update
-RUN apt-get -y install libcouchbase-dev libcouchbase2-bin build-essential
+RUN wget http://packages.couchbase.com/releases/couchbase-release/couchbase-release-1.0-6-amd64.deb
+RUN dpkg -i couchbase-release-1.0-6-amd64.deb
+RUN python3.6 -m pip install couchbase==3.0.0a4
+RUN python3.6 -m pip install pyyaml gevent requests eventlet
 
-WORKDIR /root
-RUN pip install git+git://github.com/couchbase/couchbase-python-client
-RUN pip install pyyaml
-RUN pip install eventlet
-
-# src
-RUN git clone https://github.com/couchbaselabs/gideon.git
+RUN mkdir gideon
+COPY . gideon/
 WORKDIR gideon
-
-COPY spec.yaml spec.yaml
-CMD python gideon.py kv --spec spec.yaml
+ENTRYPOINT ["python3.6","gideon.py"]
