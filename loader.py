@@ -64,7 +64,7 @@ class SDKClient(threading.Thread):
         self.durability= task['durability']
         self.miss_perc = task['miss_perc']
         self.active_hosts = task['active_hosts']
-        self.batch_size = 5000
+        self.batch_size = 1000
         self.memq = queue.Queue()
         self.consume_queue = task['consume_queue']
         self.standalone = task['standalone']
@@ -108,7 +108,7 @@ class SDKClient(threading.Thread):
             endpoint = 'couchbase://{0}:{1}'.format(host,port)
             cluster = Cluster(endpoint, ClusterOptions(auther))
             self.cb = cluster.bucket(self.bucket).default_collection()
-
+            self.cb.timeout = 10
         except Exception as ex:
 
             logging.error("[Thread %s] cannot reach %s" % (self.name, endpoint))
