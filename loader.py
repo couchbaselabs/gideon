@@ -64,7 +64,7 @@ class SDKClient(threading.Thread):
         self.durability= task['durability']
         self.miss_perc = task['miss_perc']
         self.active_hosts = task['active_hosts']
-        self.batch_size = 5000
+        self.batch_size = 1000
         self.memq = queue.Queue()
         self.consume_queue = task['consume_queue']
         self.standalone = task['standalone']
