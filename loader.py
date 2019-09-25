@@ -108,7 +108,7 @@ class SDKClient(threading.Thread):
             endpoint = 'couchbase://{0}:{1}'.format(host,port)
             cluster = Cluster(endpoint, ClusterOptions(auther))
             self.cb = cluster.bucket(self.bucket).default_collection()
-
+            self.cb.timeout = 10
         except Exception as ex:
 
             logging.error("[Thread %s] cannot reach %s" % (self.name, endpoint))
