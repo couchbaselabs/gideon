@@ -113,7 +113,7 @@ class SDKClient(threading.Thread):
 
             logging.error("[Thread %s] cannot reach %s" % (self.name, endpoint))
             logging.error(ex)
-            self.isterminal = True
+            #self.isterminal = True
 
         logging.info("[Thread %s] started for workload: %s" % (self.name, task['id']))
 
@@ -219,7 +219,7 @@ class SDKClient(threading.Thread):
             logging.error(nx)
         except Exception as ex:
             logging.error(ex)
-            self.isterminal = True
+            #self.isterminal = True
 
     def mset_update(self, template, count, persist_to=0, replicate_to=0,durability_level=Durability.NONE):
 
@@ -244,7 +244,7 @@ class SDKClient(threading.Thread):
                     logging.warn("temp failure during mset - cluster may be unstable")
                 except Exception as ex:
                     logging.error(ex)
-                    self.isterminal = True
+                    #self.isterminal = True
 
     def mget(self, count):
 
@@ -269,7 +269,7 @@ class SDKClient(threading.Thread):
                     logging.error(nx)
                 except Exception as ex:
                     logging.error(ex)
-                    self.isterminal = True
+                    #self.isterminal = True
 
     def mdelete(self, count,durability_level=Durability.NONE):
         batches = self.getKeys(count, requeue=False)
@@ -297,7 +297,7 @@ class SDKClient(threading.Thread):
                 logging.error(nx)
             except Exception as ex:
                 logging.error(ex)
-                self.isterminal = True
+                #self.isterminal = True
 
         return keys_deleted
 
