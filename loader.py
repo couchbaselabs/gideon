@@ -1,3 +1,4 @@
+import copy
 import re
 import sys
 import datetime
@@ -9,9 +10,10 @@ import argparse
 
 # couchbase
 # from couchbase.experimental import enable as enable_experimental
-from couchbase.exceptions import NotFoundError, TemporaryFailError, TimeoutError, NetworkError, AuthError
+from couchbase.exceptions import DocumentNotFoundException, \
+                                 TemporaryFailException, TimeoutException, \
+    NetworkException, AuthenticationException
 # enable_experimental()
-from gcouchbase.bucket import Bucket
 from couchbase.cluster import Cluster
 from couchbase_core.cluster import PasswordAuthenticator
 from couchbase.durability import Durability
@@ -49,6 +51,8 @@ class SDKClient(threading.Thread):
         self.op_factor = CLIENTSPERPROCESS * PROCSPERTASK
         self.ops_sec = task['ops_sec']
         self.bucket = task['bucket']
+        self.scope = task['scope']
+        self.collection = task['collection']
         self.password = task['password']
         self.user_password = task['user_password']
         self.template = task['template']
@@ -107,7 +111,11 @@ class SDKClient(threading.Thread):
             auther = PasswordAuthenticator(self.bucket, self.user_password)
             endpoint = 'couchbase://{0}:{1}'.format(host,port)
             cluster = Cluster(endpoint, ClusterOptions(auther))
-            self.cb = cluster.bucket(self.bucket).default_collection()
+            if self.collection == "default":
+                self.cb = cluster.bucket(self.bucket).default_collection()
+            else:
+                self.cb = cluster.bucket(self.bucket).scope(
+                    self.scope).collection(self.collection)
             self.cb.timeout = 30
         except Exception as ex:
 
@@ -210,11 +218,11 @@ class SDKClient(threading.Thread):
 
         try:
             self.cb.upsert_multi(msg, ttl=ttl, persist_to=persist_to, replicate_to=replicate_to,durability_level=durability_level)
-        except TemporaryFailError:
+        except TemporaryFailException:
             logging.warn("temp failure during mset - cluster may be unstable")
-        except TimeoutError:
+        except TimeoutException:
             logging.warn("cluster timed trying to handle mset")
-        except NetworkError as nx:
+        except NetworkException as nx:
             logging.error("network error")
             logging.error(nx)
         except Exception as ex:
@@ -233,14 +241,14 @@ class SDKClient(threading.Thread):
                     for key in batch:
                         msg[key] = template
                     self.cb.upsert_multi(msg, persist_to=persist_to, replicate_to=replicate_to,durability_level=durability_level)
-                except NotFoundError as nf:
+                except DocumentNotFoundException as nf:
                     logging.error("update key not found!  %s: " % nf.key)
-                except TimeoutError:
+                except TimeoutException:
                     logging.warn("cluster timed out trying to handle mset - cluster may be unstable")
-                except NetworkError as nx:
+                except NetworkException as nx:
                     logging.error("network error")
                     logging.error(nx)
-                except TemporaryFailError:
+                except TemporaryFailException:
                     logging.warn("temp failure during mset - cluster may be unstable")
                 except Exception as ex:
                     logging.error(ex)
@@ -259,12 +267,12 @@ class SDKClient(threading.Thread):
             for batch in batches:
                 try:
                     self.cb.get_multi(batch)
-                except NotFoundError as nf:
+                except DocumentNotFoundException as nf:
                     logging.warn("get key not found!  %s: " % nf.key)
                     pass
-                except TimeoutError:
+                except TimeoutException:
                     logging.warn("cluster timed out trying to handle mget - cluster may be unstable")
-                except NetworkError as nx:
+                except NetworkException as nx:
                     logging.error("network error")
                     logging.error(nx)
                 except Exception as ex:
@@ -288,11 +296,11 @@ class SDKClient(threading.Thread):
                 if len(batch) > 0:
                     keys_deleted = len(batch) + keys_deleted
                     self.cb.remove_multi(batch,durability_level=durability_level)
-            except NotFoundError as nf:
+            except DocumentNotFoundException as nf:
                 logging.warn("get key not found!  %s: " % nf.key)
-            except TimeoutError:
+            except TimeoutException:
                 logging.warn("cluster timed out trying to handle mdelete - cluster may be unstable")
-            except NetworkError as nx:
+            except NetworkException as nx:
                 logging.error("network error")
                 logging.error(nx)
             except Exception as ex:
@@ -382,7 +390,7 @@ class SDKClient(threading.Thread):
             return
 
         # put about 20 items into the queue
-        for i in xrange(20):
+        for i in range(20):
             key_map = self.getKeyMapFromRemoteQueue()
             if key_map:
                 self.memq.put_nowait(key_map)
@@ -498,18 +506,24 @@ def kill_nprocs(id_, kill_num=None):
 def start_client_processes(task, standalone=False):
     task['standalone'] = standalone
     workload_id = task['id']
-    PROCSSES[workload_id] = []
-
-    for i in range(PROCSPERTASK):
-        # set process id and provide queue
-        p_id = (i) * CLIENTSPERPROCESS
-        p = SDKProcess(p_id, task)
-
-        # start
-        p.start()
-
-        # archive
-        PROCSSES[workload_id].append(p)
+    collections = task['collections']
+    for scope, _collections in collections.items():
+        for collection in _collections:
+            workload_id = "{}_{}_{}".format(workload_id, scope, collection)
+            _task = copy.deepcopy(task)
+            _task['scope'] = scope
+            _task["collection"] = collection
+            _task['template']['kv']['scope'] = scope
+            _task['template']['kv']["collection"] = collection
+            PROCSSES[workload_id] = []
+            for i in range(PROCSPERTASK):
+                # set process id and provide queue
+                p_id = (i) * CLIENTSPERPROCESS
+                p = SDKProcess(p_id, _task)
+                # start
+                p.start()
+                # archive
+                PROCSSES[workload_id].append(p)
 
 
 def init(message):

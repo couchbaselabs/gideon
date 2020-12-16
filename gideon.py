@@ -1,5 +1,7 @@
 import argparse
 import copy
+import json
+import httplib2
 import yaml
 from loader import start_client_processes
 from query import query_loader
@@ -22,6 +24,8 @@ def argsToTask(args):
     persist_to = args.get('persist_to')
     replicate_to = args.get('replicate_to')
     durability = args.get('durability')
+    scope = args.get('scope')
+    collections = args.get('collection')
     num_consumers = 1
 
     ops_sec = int(ops_sec)/num_consumers
@@ -34,6 +38,21 @@ def argsToTask(args):
     ttl = args.get('ttl')
     miss_perc = args.get('miss')
 
+    host = active_hosts[0].split(":")[0] + ":8091"
+    if scope == "default" and collections == "default":
+        collections = {"_default": ["_default"]}
+    elif scope == "ALL":
+        collections = getallcollections(host, bucket, user_password, bucket)
+    elif collections == "ALL":
+        collections = {}
+        for _scope in scope.split(","):
+            _collection = get_all_collections_for_scope(host, bucket,
+                                                        user_password,
+                                                        bucket, _scope)
+            collections[_scope] = _collection
+    else:
+        _collections = {scope: collections.split(',')}
+        collections = _collections
     # broadcast to sdk_consumers
     msg = {'bucket' : bucket,
            'id' : bucket,
@@ -54,7 +73,8 @@ def argsToTask(args):
            'sizes': sizes,
            'persist_to': persist_to,
            'replicate_to': replicate_to,
-            'durability': durability}
+           'durability': durability,
+           'collections': collections}
 
     # set doc-template to this message
     msg_copy = copy.deepcopy(msg)
@@ -133,6 +153,12 @@ def init_kv_parser():
     kv_parser.add_argument("--persist_to", default=0, type=int, help="persist_to argument for create and update")
     kv_parser.add_argument("--replicate_to", default=0, type=int, help="replicate_to argument for create and update")
     kv_parser.add_argument("--durability", default=None,help="durability levels ['majority', 'majority_and_persist_on_master', 'persist_to_majority']")
+    kv_parser.add_argument("--scope", default="default",
+                           help="Scope to run the load generator "
+                                "against")
+    kv_parser.add_argument("--collection", default="default",
+                           help="Collections to run the load "
+                                "generator against")
     kv_parser.set_defaults(handler=run_kv)
 
 
@@ -150,6 +176,75 @@ def init_query_parser():
     query_parser.add_argument("--params", nargs="+", help="query params key1:value1 key2:value2 ...", default=None)
     query_parser.set_defaults(handler=run_query)
 
+
+def api_call(host, username, password, url, method="GET", body=None):
+    headers = {'content-type': 'application/x-www-form-urlencoded'}
+    url = "http://" + host + "/pools/default/buckets/" + url
+    http = httplib2.Http(timeout=120)
+    http.add_credentials(username, password)
+    response, content = http.request(uri=url, method=method, headers=headers, body=body)
+    if response['status'] in ['200', '201', '202']:
+        return True, json.loads(content), response
+    else:
+        return False, content, response
+
+
+def getallcollections(host, username, password, bucket):
+    url = bucket + "/collections"
+    passed, content, response = api_call(host, username, password,
+                                         url, "GET")
+    collection_map = {}
+    scopes_dict = content["scopes"]
+    for obj in scopes_dict:
+        collection_list = obj["collections"]
+        coll_list = []
+        for obj2 in collection_list:
+            coll_list.append(obj2["name"])
+        collection_map[obj["name"]] = coll_list
+    print(json.dumps(collection_map, sort_keys=True, indent=4))
+    return collection_map
+
+
+def get_all_collections_for_scope(host, username, password, bucket,
+                                  scope):
+    url = bucket + "/collections"
+    passed, content, response = api_call(host, username, password,
+                                         url, "GET")
+    collection_map = {}
+    coll_list = []
+    scopes_dict = content["scopes"]
+    for obj in scopes_dict:
+        if obj["name"] == scope:
+            collection_list = obj["collections"]
+            for obj2 in collection_list:
+                coll_list.append(obj2["name"])
+        else:
+            pass
+    return coll_list
+
+
+def get_raw_collection_map(host, username, password, bucket):
+    url = bucket + "/collections"
+    passed, content, response = api_call(host, username, password,
+                                         url, "GET")
+    return content
+
+
+def getallscopes(host, username, password, bucket):
+    url = bucket + "/collections"
+    passed, content, response = api_call(host, username, password,
+                                         url, "GET")
+    scopes_list = content["scopes"]
+    return scopes_list
+
+def get_scope_list(host, username, password, bucket):
+    scope_list = []
+    content = get_raw_collection_map(host, username, password, bucket)
+    #scope_coll_map = self.getallscopes(bucket)
+    for scope in content["scopes"]:
+        scope_list.append(scope["name"])
+
+    return scope_list
 
 if __name__ == "__main__":
 
