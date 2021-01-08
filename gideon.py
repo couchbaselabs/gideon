@@ -54,6 +54,9 @@ def argsToTask(args):
         _collections = {scope: collections.split(',')}
         collections = _collections
     # broadcast to sdk_consumers
+    if collections is None:
+        raise Exception("Collections is None. An error must have "
+                        "occured while trying to get the collections.")
     msg = {'bucket' : bucket,
            'id' : bucket,
            'password' : password,
@@ -155,10 +158,16 @@ def init_kv_parser():
     kv_parser.add_argument("--durability", default=None,help="durability levels ['majority', 'majority_and_persist_on_master', 'persist_to_majority']")
     kv_parser.add_argument("--scope", default="default",
                            help="Scope to run the load generator "
-                                "against")
+                                "against. Use ALL to run against all "
+                                "scopes and collections. Can be a "
+                                "comma separated list too. "
+                                "Default is default scope")
     kv_parser.add_argument("--collection", default="default",
                            help="Collections to run the load "
-                                "generator against")
+                                "generator against. Use ALL to run against all "
+                                "collections in a particular scope(s). "
+                                "Can be a comma separated list too."
+                                "Default is default scope.")
     kv_parser.set_defaults(handler=run_kv)
 
 
@@ -194,6 +203,10 @@ def getallcollections(host, username, password, bucket):
     passed, content, response = api_call(host, username, password,
                                          url, "GET")
     collection_map = {}
+    if not passed or not isinstance(content, dict):
+        print("Couldn't get the collections for the scopes. "
+              "Response:{}".format(content))
+        return None
     scopes_dict = content["scopes"]
     for obj in scopes_dict:
         collection_list = obj["collections"]
@@ -212,6 +225,10 @@ def get_all_collections_for_scope(host, username, password, bucket,
                                          url, "GET")
     collection_map = {}
     coll_list = []
+    if not passed or not isinstance(content, dict):
+        print("Couldn't get the collections for the scopes. "
+              "Response:{}".format(content))
+        return None
     scopes_dict = content["scopes"]
     for obj in scopes_dict:
         if obj["name"] == scope:
