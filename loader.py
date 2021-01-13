@@ -36,9 +36,9 @@ logging.basicConfig(filename='consumer.log', level=logging.DEBUG)
 
 # some global state
 CB_CLUSTER_TAG = "default"
-CLIENTSPERPROCESS = 4
-PROCSPERTASK = 4
-MAXPROCESSES = 16
+CLIENTSPERPROCESS = 2
+PROCSPERTASK = 2
+MAXPROCESSES = 8
 PROCSSES = {}
 
 
