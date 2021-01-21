@@ -36,8 +36,8 @@ logging.basicConfig(filename='consumer.log', level=logging.DEBUG)
 
 # some global state
 CB_CLUSTER_TAG = "default"
-CLIENTSPERPROCESS = 2
-PROCSPERTASK = 2
+CLIENTSPERPROCESS = 4
+PROCSPERTASK = 4
 MAXPROCESSES = 8
 PROCSSES = {}
 
@@ -51,8 +51,6 @@ class SDKClient(threading.Thread):
         self.op_factor = CLIENTSPERPROCESS * PROCSPERTASK
         self.ops_sec = task['ops_sec']
         self.bucket = task['bucket']
-        self.scope = task['scope']
-        self.collection = task['collection']
         self.password = task['password']
         self.user_password = task['user_password']
         self.template = task['template']
@@ -100,6 +98,8 @@ class SDKClient(threading.Thread):
 
         self.e = e
         self.cb = None
+        self.cbs = []
+        self.templates = []
         self.isterminal = False
         self.done = False
 
@@ -111,12 +111,26 @@ class SDKClient(threading.Thread):
             auther = PasswordAuthenticator(self.bucket, self.user_password)
             endpoint = 'couchbase://{0}:{1}'.format(host,port)
             cluster = Cluster(endpoint, ClusterOptions(auther))
-            if self.collection == "default":
-                self.cb = cluster.bucket(self.bucket).default_collection()
-            else:
-                self.cb = cluster.bucket(self.bucket).scope(
-                    self.scope).collection(self.collection)
-            self.cb.timeout = 30
+            collections = task['collections']
+            for scope, _collections in collections.items():
+                for collection in _collections:
+                    template = copy.deepcopy(self.template)
+                    template['kv']['scope'] = scope
+                    template['kv']["collection"] = collection
+                    self.templates.append(template)
+                    try:
+                        if collection == "default":
+                            cb = cluster.bucket(self.bucket).default_collection()
+                        else:
+                            cb = cluster.bucket(self.bucket).scope(
+                                scope).collection(collection)
+                        cb.timeout = 30
+                        self.cbs.append(cb)
+                    except Exception as ex:
+                        logging.error("[Thread %s] cannot reach %s "
+                                      "for %s-%s" % (
+                        self.name, endpoint, scope, collection))
+                        logging.error(ex)
         except Exception as ex:
 
             logging.error("[Thread %s] cannot reach %s" % (self.name, endpoint))
@@ -164,32 +178,34 @@ class SDKClient(threading.Thread):
         return  # todo for dirty keys
 
     def do_cycle(self):
+        for i in range(self.cbs.__len__()):
+            self.cb = self.cbs[i]
+            self.template = self.templates[i]
+            sizes = self.template.get('size') or self.default_tsizes
+            t_size = sizes[random.randint(0, len(sizes) - 1)]
+            self.template['t_size'] = t_size
+            if self.create_count > 0:
 
-        sizes = self.template.get('size') or self.default_tsizes
-        t_size = sizes[random.randint(0, len(sizes) - 1)]
-        self.template['t_size'] = t_size
-        if self.create_count > 0:
+                count = self.create_count
+                docs_to_expire = self.exp_count
+                # check if we need to expire some docs
+                if docs_to_expire > 0:
+                    # create an expire batch
+                    self.mset(self.template, docs_to_expire, ttl=self.ttl, persist_to=self.persist_to,
+                              replicate_to=self.replicate_to,durability_level=self.durability_level)
+                    count = count - docs_to_expire
+                    count = int(count)
+                self.mset(self.template, count, persist_to=self.persist_to, replicate_to=self.replicate_to,durability_level=self.durability_level)
 
-            count = self.create_count
-            docs_to_expire = self.exp_count
-            # check if we need to expire some docs
-            if docs_to_expire > 0:
-                # create an expire batch
-                self.mset(self.template, docs_to_expire, ttl=self.ttl, persist_to=self.persist_to,
-                          replicate_to=self.replicate_to,durability_level=self.durability_level)
-                count = count - docs_to_expire
-                count = int(count)
-            self.mset(self.template, count, persist_to=self.persist_to, replicate_to=self.replicate_to,durability_level=self.durability_level)
+            if self.update_count > 0:
+                self.mset_update(self.template, self.update_count, persist_to=self.persist_to,
+                                 replicate_to=self.replicate_to,durability_level=self.durability_level)
 
-        if self.update_count > 0:
-            self.mset_update(self.template, self.update_count, persist_to=self.persist_to,
-                             replicate_to=self.replicate_to,durability_level=self.durability_level)
+            if self.get_count > 0:
+                self.mget(self.get_count)
 
-        if self.get_count > 0:
-            self.mget(self.get_count)
-
-        if self.del_count > 0:
-            self.mdelete(self.del_count,durability_level=self.durability_level)
+            if self.del_count > 0:
+                self.mdelete(self.del_count,durability_level=self.durability_level)
 
     def mset(self, template, count, ttl=0, persist_to=0, replicate_to=0,durability_level=Durability.NONE):
         msg = {}
@@ -426,8 +442,9 @@ class SDKProcess(Process):
         self.id = id
         self.clients = []
         p_id = self.id
-        self.client_events = [Event() for e in range(CLIENTSPERPROCESS)]
-        for i in range(CLIENTSPERPROCESS):
+        tasks_per_process = self.task['tasks_per_process']
+        self.client_events = [Event() for e in range(tasks_per_process)]
+        for i in range(tasks_per_process):
             name = str(_random_string(4)) + "-" + str(p_id) + str(i) + "_"
 
             # start client
@@ -505,25 +522,20 @@ def kill_nprocs(id_, kill_num=None):
 
 def start_client_processes(task, standalone=False):
     task['standalone'] = standalone
+    max_process = task['max_process']
     workload_id = task['id']
-    collections = task['collections']
-    for scope, _collections in collections.items():
-        for collection in _collections:
-            workload_id = "{}_{}_{}".format(workload_id, scope, collection)
-            _task = copy.deepcopy(task)
-            _task['scope'] = scope
-            _task["collection"] = collection
-            _task['template']['kv']['scope'] = scope
-            _task['template']['kv']["collection"] = collection
-            PROCSSES[workload_id] = []
-            for i in range(PROCSPERTASK):
-                # set process id and provide queue
-                p_id = (i) * CLIENTSPERPROCESS
-                p = SDKProcess(p_id, _task)
-                # start
-                p.start()
-                # archive
-                PROCSSES[workload_id].append(p)
+    PROCSSES[workload_id] = []
+
+    for i in range(max_process):
+        # set process id and provide queue
+        p_id = (i) * CLIENTSPERPROCESS
+        p = SDKProcess(p_id, task)
+
+        # start
+        p.start()
+
+        # archive
+        PROCSSES[workload_id].append(p)
 
 
 def init(message):

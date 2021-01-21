@@ -27,6 +27,8 @@ def argsToTask(args):
     scope = args.get('scope')
     collections = args.get('collection')
     num_consumers = 1
+    max_process = args.get('process')
+    task_per_process = args.get('tasks_per_process')
 
     ops_sec = int(ops_sec)/num_consumers
     create_count = int(ops_sec *  args.get('create')/100)
@@ -42,7 +44,7 @@ def argsToTask(args):
     if scope == "default" and collections == "default":
         collections = {"_default": ["_default"]}
     elif scope == "ALL":
-        collections = getallcollections(host, bucket, user_password, bucket)
+        collections = get_all_collections(host, bucket, user_password, bucket)
     elif collections == "ALL":
         collections = {}
         for _scope in scope.split(","):
@@ -77,7 +79,9 @@ def argsToTask(args):
            'persist_to': persist_to,
            'replicate_to': replicate_to,
            'durability': durability,
-           'collections': collections}
+           'collections': collections,
+           'max_process': max_process,
+           'tasks_per_process': task_per_process}
 
     # set doc-template to this message
     msg_copy = copy.deepcopy(msg)
@@ -168,6 +172,12 @@ def init_kv_parser():
                                 "collections in a particular scope(s). "
                                 "Can be a comma separated list too."
                                 "Default is default scope.")
+    kv_parser.add_argument("--process", default=4, type=int,
+                           help="Number of processes that can be "
+                                "spawned by gideon.")
+    kv_parser.add_argument("--tasks_per_process", default=4, type=int,
+                           help="Number of tasks per process to be "
+                                "spawned by gideon.")
     kv_parser.set_defaults(handler=run_kv)
 
 
@@ -198,8 +208,8 @@ def api_call(host, username, password, url, method="GET", body=None):
         return False, content, response
 
 
-def getallcollections(host, username, password, bucket):
-    url = bucket + "/collections"
+def get_all_collections(host, username, password, bucket):
+    url = bucket + "/scopes"
     passed, content, response = api_call(host, username, password,
                                          url, "GET")
     collection_map = {}
@@ -220,7 +230,7 @@ def getallcollections(host, username, password, bucket):
 
 def get_all_collections_for_scope(host, username, password, bucket,
                                   scope):
-    url = bucket + "/collections"
+    url = bucket + "/scopes"
     passed, content, response = api_call(host, username, password,
                                          url, "GET")
     collection_map = {}
@@ -241,14 +251,14 @@ def get_all_collections_for_scope(host, username, password, bucket,
 
 
 def get_raw_collection_map(host, username, password, bucket):
-    url = bucket + "/collections"
+    url = bucket + "/scopes"
     passed, content, response = api_call(host, username, password,
                                          url, "GET")
     return content
 
 
-def getallscopes(host, username, password, bucket):
-    url = bucket + "/collections"
+def get_all_scopes(host, username, password, bucket):
+    url = bucket + "/scopes"
     passed, content, response = api_call(host, username, password,
                                          url, "GET")
     scopes_list = content["scopes"]
