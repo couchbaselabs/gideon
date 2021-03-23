@@ -3,13 +3,14 @@ import copy
 import json
 import httplib2
 import yaml
-from loader import start_client_processes
+from loader import start_client_processes, kill_all_proc
 from query import query_loader
-
+from signal import signal, SIGINT
 parser = argparse.ArgumentParser(description='Mighty Small CB Loader')
 subparsers = parser.add_subparsers(help="workload type")
 
 def run_workload(args):
+    signal(SIGINT, handler)
     task = argsToTask(args)
     start_client_processes(task, standalone = True)
 
@@ -273,8 +274,12 @@ def get_scope_list(host, username, password, bucket):
 
     return scope_list
 
-if __name__ == "__main__":
+def handler(signal_received, frame):
+    kill_all_proc()
+    print('SIGINT or CTRL-C detected. Exiting gracefully')
+    exit(0)
 
+if __name__ == "__main__":
     # setup cli parsers
     init_kv_parser()
     init_query_parser()

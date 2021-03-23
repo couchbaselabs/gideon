@@ -7,7 +7,6 @@ import json
 import gevent
 import random
 import argparse
-
 # couchbase
 # from couchbase.experimental import enable as enable_experimental
 from couchbase.exceptions import DocumentNotFoundException, \
@@ -19,6 +18,9 @@ from couchbase_core.cluster import PasswordAuthenticator
 from couchbase.durability import Durability
 from couchbase.cluster import ClusterOptions
 
+import linecache
+import os
+import tracemalloc
 # para
 from gevent import Greenlet, queue
 import threading
@@ -143,7 +145,7 @@ class SDKClient(threading.Thread):
 
         cycle = ops_total = 0
         self.e.set()
-
+        tracemalloc.start()
         while self.e.is_set() == True:
 
             start = datetime.datetime.now()
@@ -206,6 +208,8 @@ class SDKClient(threading.Thread):
 
             if self.del_count > 0:
                 self.mdelete(self.del_count,durability_level=self.durability_level)
+        snapshot = tracemalloc.take_snapshot()
+        self.display_top(snapshot)
 
     def mset(self, template, count, ttl=0, persist_to=0, replicate_to=0,durability_level=Durability.NONE):
         msg = {}
@@ -431,6 +435,30 @@ class SDKClient(threading.Thread):
     def getKeyMapFromRemoteQueue(self, requeue=True):
         return None
 
+    def display_top(self, snapshot, key_type='lineno', limit=10):
+        snapshot = snapshot.filter_traces((
+            tracemalloc.Filter(False, "<frozen importlib._bootstrap>"),
+            ))
+        top_stats = snapshot.statistics(key_type)
+
+        print("Top %s lines" % limit)
+        for index, stat in enumerate(top_stats[:limit], 1):
+            frame = stat.traceback[0]
+            print("#%s: %s:%s: %.1f KiB"
+                  % (index, frame.filename, frame.lineno,
+                     stat.size / 1024))
+            line = linecache.getline(frame.filename,
+                                     frame.lineno).strip()
+            if line:
+                print('    %s' % line)
+
+        other = top_stats[limit:]
+        if other:
+            size = sum(stat.size for stat in other)
+            print("%s other: %.1f KiB" % (len(other), size / 1024))
+        total = sum(stat.size for stat in top_stats)
+        print("Total allocated size: %.1f KiB\n\n" % (total / 1024))
+
 
 class SDKProcess(Process):
 
@@ -519,13 +547,16 @@ def kill_nprocs(id_, kill_num=None):
         for i in range(kill_num):
             procs[i].terminate()
 
+def kill_all_proc():
+    for procs in PROCSSES.values():
+        for proc in procs:
+            proc.terminate()
 
 def start_client_processes(task, standalone=False):
     task['standalone'] = standalone
     max_process = task['max_process']
     workload_id = task['id']
     PROCSSES[workload_id] = []
-
     for i in range(max_process):
         # set process id and provide queue
         p_id = (i) * CLIENTSPERPROCESS
@@ -536,7 +567,6 @@ def start_client_processes(task, standalone=False):
 
         # archive
         PROCSSES[workload_id].append(p)
-
 
 def init(message):
     body = message.body
