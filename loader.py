@@ -21,13 +21,16 @@ from couchbase.cluster import Cluster
 from acouchbase.cluster import Cluster as ACluster
 from acouchbase.cluster import get_event_loop
 from couchbase.auth import PasswordAuthenticator
-from couchbase.durability import Durability
+from couchbase.durability import Durability, ServerDurability, \
+    ClientDurability, Cardinal
 from couchbase.cluster import ClusterOptions
+from couchbase.collection import UpsertOptions, RemoveOptions, GetOptions
 
 import linecache
 import os
 import tracemalloc
 # para
+from couchbase_core.client import Client
 from gevent import Greenlet, queue
 import threading
 import multiprocessing
@@ -235,7 +238,19 @@ class SDKClientAsync(object):
                     durability_level=Durability.NONE):
 
         try:
-            await self.cb.upsert(key, doc)
+            if persist_to != 0 or replicate_to != 0:
+                durability = ClientDurability(
+                    replicate_to=Cardinal(replicate_to),
+                    persist_to=Cardinal(persist_to))
+            else:
+                durability = ServerDurability(durability_level)
+            if ttl != 0:
+                timedelta = datetime.timedelta(ttl)
+                upsert_options = UpsertOptions(expiry=timedelta,
+                                           durability=durability)
+            else:
+                upsert_options = UpsertOptions(durability=durability)
+            await self.cb.upsert(key, doc, options=upsert_options)
         except TemporaryFailException:
             logging.warn(
                 "temp failure during mset - cluster may be unstable")
@@ -329,7 +344,8 @@ class SDKClientAsync(object):
 
     async def _mdelete(self, key, durability_level=Durability.NONE):
         try:
-            await self.cb.remove(key)
+            await self.cb.remove(key, RemoveOptions(
+                durability=ServerDurability(durability_level)))
         except DocumentNotFoundException as nf:
             logging.warn(
                 f"[{self.name}] get key not found!  %s: " % nf.key)
@@ -874,16 +890,18 @@ class SDKProcess(Process):
         print('\nStopping loop...')
         loop.stop()
 
+    async def create_clients(self):
+        tasks_per_process = self.task['tasks_per_process']
+        for i in range(tasks_per_process):
+            task_name = str(_random_string(4)) + "-" + str(
+                os.getpid()) + str(i) + "_"
+            self.clients.append(
+                await SDKClientAsync.create(self.task, task_name,
+                                            i))
+
     async def run_async(self):
         try:
-            clients = []
-            tasks_per_process = self.task['tasks_per_process']
-            for i in range(tasks_per_process):
-                task_name = str(_random_string(4)) + "-" + str(
-                    os.getpid()) + str(i) + "_"
-                clients.append(
-                    await SDKClientAsync.create(self. task, task_name,
-                                                i))
+            clients = self.clients
 
             tasks = list(map(
                 lambda c: asyncio.get_event_loop().create_task(c.run(),
@@ -931,8 +949,11 @@ class SDKProcess(Process):
                                         self.shut_down(
                                             signal.SIGINT,
                                             loop)))
-            asyncio.ensure_future(self.run_async())
-            loop.run_forever()
+            loop.run_until_complete(self.create_clients())
+            while True:
+                if len(self.clients) == 0:
+                    loop.run_until_complete(self.create_clients())
+                loop.run_until_complete(self.run_async())
         except KeyboardInterrupt:
             pass
         except Exception as ex:
