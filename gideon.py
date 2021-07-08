@@ -1,13 +1,16 @@
 import argparse
 import copy
+import json
+import httplib2
 import yaml
-from loader import start_client_processes
+from loader import start_client_processes, kill_all_proc
 from query import query_loader
-
+from signal import signal, SIGINT
 parser = argparse.ArgumentParser(description='Mighty Small CB Loader')
 subparsers = parser.add_subparsers(help="workload type")
 
 def run_workload(args):
+    signal(SIGINT, handler)
     task = argsToTask(args)
     start_client_processes(task, standalone = True)
 
@@ -22,7 +25,11 @@ def argsToTask(args):
     persist_to = args.get('persist_to')
     replicate_to = args.get('replicate_to')
     durability = args.get('durability')
+    scope = args.get('scope')
+    collections = args.get('collection')
     num_consumers = 1
+    max_process = args.get('process')
+    task_per_process = args.get('tasks_per_process')
 
     ops_sec = int(ops_sec)/num_consumers
     create_count = int(ops_sec *  args.get('create')/100)
@@ -34,7 +41,25 @@ def argsToTask(args):
     ttl = args.get('ttl')
     miss_perc = args.get('miss')
 
+    host = active_hosts[0].split(":")[0] + ":8091"
+    if scope == "default" and collections == "default":
+        collections = {"_default": ["_default"]}
+    elif scope == "ALL":
+        collections = get_all_collections(host, bucket, user_password, bucket)
+    elif collections == "ALL":
+        collections = {}
+        for _scope in scope.split(","):
+            _collection = get_all_collections_for_scope(host, bucket,
+                                                        user_password,
+                                                        bucket, _scope)
+            collections[_scope] = _collection
+    else:
+        _collections = {scope: collections.split(',')}
+        collections = _collections
     # broadcast to sdk_consumers
+    if collections is None:
+        raise Exception("Collections is None. An error must have "
+                        "occured while trying to get the collections.")
     msg = {'bucket' : bucket,
            'id' : bucket,
            'password' : password,
@@ -54,7 +79,10 @@ def argsToTask(args):
            'sizes': sizes,
            'persist_to': persist_to,
            'replicate_to': replicate_to,
-            'durability': durability}
+           'durability': durability,
+           'collections': collections,
+           'max_process': max_process,
+           'tasks_per_process': task_per_process}
 
     # set doc-template to this message
     msg_copy = copy.deepcopy(msg)
@@ -133,6 +161,24 @@ def init_kv_parser():
     kv_parser.add_argument("--persist_to", default=0, type=int, help="persist_to argument for create and update")
     kv_parser.add_argument("--replicate_to", default=0, type=int, help="replicate_to argument for create and update")
     kv_parser.add_argument("--durability", default=None,help="durability levels ['majority', 'majority_and_persist_on_master', 'persist_to_majority']")
+    kv_parser.add_argument("--scope", default="default",
+                           help="Scope to run the load generator "
+                                "against. Use ALL to run against all "
+                                "scopes and collections. Can be a "
+                                "comma separated list too. "
+                                "Default is default scope")
+    kv_parser.add_argument("--collection", default="default",
+                           help="Collections to run the load "
+                                "generator against. Use ALL to run against all "
+                                "collections in a particular scope(s). "
+                                "Can be a comma separated list too."
+                                "Default is default scope.")
+    kv_parser.add_argument("--process", default=4, type=int,
+                           help="Number of processes that can be "
+                                "spawned by gideon.")
+    kv_parser.add_argument("--tasks_per_process", default=4, type=int,
+                           help="Number of tasks per process to be "
+                                "spawned by gideon.")
     kv_parser.set_defaults(handler=run_kv)
 
 
@@ -151,8 +197,89 @@ def init_query_parser():
     query_parser.set_defaults(handler=run_query)
 
 
-if __name__ == "__main__":
+def api_call(host, username, password, url, method="GET", body=None):
+    headers = {'content-type': 'application/x-www-form-urlencoded'}
+    url = "http://" + host + "/pools/default/buckets/" + url
+    http = httplib2.Http(timeout=120)
+    http.add_credentials(username, password)
+    response, content = http.request(uri=url, method=method, headers=headers, body=body)
+    if response['status'] in ['200', '201', '202']:
+        return True, json.loads(content), response
+    else:
+        return False, content, response
 
+
+def get_all_collections(host, username, password, bucket):
+    url = bucket + "/scopes"
+    passed, content, response = api_call(host, username, password,
+                                         url, "GET")
+    collection_map = {}
+    if not passed or not isinstance(content, dict):
+        print("Couldn't get the collections for the scopes. "
+              "Response:{}".format(content))
+        return None
+    scopes_dict = content["scopes"]
+    for obj in scopes_dict:
+        collection_list = obj["collections"]
+        coll_list = []
+        for obj2 in collection_list:
+            coll_list.append(obj2["name"])
+        collection_map[obj["name"]] = coll_list
+    print(json.dumps(collection_map, sort_keys=True, indent=4))
+    return collection_map
+
+
+def get_all_collections_for_scope(host, username, password, bucket,
+                                  scope):
+    url = bucket + "/scopes"
+    passed, content, response = api_call(host, username, password,
+                                         url, "GET")
+    collection_map = {}
+    coll_list = []
+    if not passed or not isinstance(content, dict):
+        print("Couldn't get the collections for the scopes. "
+              "Response:{}".format(content))
+        return None
+    scopes_dict = content["scopes"]
+    for obj in scopes_dict:
+        if obj["name"] == scope:
+            collection_list = obj["collections"]
+            for obj2 in collection_list:
+                coll_list.append(obj2["name"])
+        else:
+            pass
+    return coll_list
+
+
+def get_raw_collection_map(host, username, password, bucket):
+    url = bucket + "/scopes"
+    passed, content, response = api_call(host, username, password,
+                                         url, "GET")
+    return content
+
+
+def get_all_scopes(host, username, password, bucket):
+    url = bucket + "/scopes"
+    passed, content, response = api_call(host, username, password,
+                                         url, "GET")
+    scopes_list = content["scopes"]
+    return scopes_list
+
+def get_scope_list(host, username, password, bucket):
+    scope_list = []
+    content = get_raw_collection_map(host, username, password, bucket)
+    #scope_coll_map = self.getallscopes(bucket)
+    for scope in content["scopes"]:
+        scope_list.append(scope["name"])
+
+    return scope_list
+
+def handler(signal_received, frame):
+    kill_all_proc()
+    print('SIGINT or CTRL-C detected. Exiting gracefully')
+    exit(0)
+
+if __name__ == "__main__":
     # setup cli parsers
     init_kv_parser()
     init_query_parser()
